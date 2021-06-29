@@ -37,7 +37,7 @@ ledcSetup(ledChannel, freq, resolution);
 // attach the channel to the GPIO to be controlled
 ledcAttachPin(LED_PIN, ledChannel);
 pinMode(LED_PIN, OUTPUT);
-ledcWrite(ledChannel, 1);
+ledcWrite(ledChannel, 0); // disable by default
 
   // // // включу светодиод
   // // pinMode(GPIO_NUM_4, OUTPUT);
