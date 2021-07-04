@@ -119,8 +119,8 @@ ledcWrite(ledChannel, 0); // disable by default
     //    .frame_size     = FRAMESIZE_QVGA,
     //    .frame_size     = FRAMESIZE_UXGA,
     //    .frame_size     = FRAMESIZE_SVGA,
-    .frame_size     = FRAMESIZE_VGA,
-    //.frame_size     = FRAMESIZE_UXGA,
+    //.frame_size     = FRAMESIZE_VGA,
+    .frame_size     = FRAMESIZE_UXGA,
     .jpeg_quality   = 16,
     .fb_count       = 2
   };

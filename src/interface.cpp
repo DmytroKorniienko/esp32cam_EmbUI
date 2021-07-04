@@ -100,7 +100,7 @@ void block_cam(Interface *interf, JsonObject *data){
     //interf->frame2("jpgframe", "jpg");
     interf->frame2("mjpgframe", "mjpeg/1");
     interf->spacer();
-    interf->range("ledBright",ledbright,1,4,1,"Уровень светимости светодиода", true);
+    interf->range("ledBright",String(ledbright),String(1),String(4),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
     
     interf->json_section_end();
