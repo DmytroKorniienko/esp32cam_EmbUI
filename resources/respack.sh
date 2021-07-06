@@ -59,8 +59,36 @@ else
     echo "EmbUI is up to date"
 fi
 
+curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/data.zip > embui.zip
+unzip -o -d ../data/ embui.zip "css/*" "js/*"
+rm -f embui.zip
 
+## check new styles
+#for f in html/css/style_*.css
+#do
+#    [ ! -f ../data/css/$( basename $f).gz ] || [ $f -nt ../data/css/$( basename $f).gz ] && refresh_styles=1
+#done
+#
+## if any of the styles needs updating, than we need to repack both embui and local files
+#if [ $refresh_styles -eq 1 ] ; then
+#
+#    echo "refreshing embui css files..."
+#
+#    curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/data.zip > embui.zip
+#    # т.к. неизвестно что изменилось во фреймворке, скрипты или цсски, обновляем всё
+#    unzip -o -d ../data/ embui.zip "css/*" "js/*"
+#
+#    # append our styles to the embui
+#    for f in html/css/style_*.css
+#    do
+#        gzip -d ../data/css/$( basename $f).gz
+#        cat $f >> ../data/css/$( basename $f)
+#        gzip -9 ../data/css/$( basename $f)
+#        touch -r $f ../data/css/$( basename $f).gz
+#    done
+#
 #    rm -f embui.zip
+#fi
 
 # update static files if newer
 [ ! -f ../data/index.html.gz ]  || [ html/index.html -nt ../data/index.html.gz ] && gzip -9k html/index.html && mv -f html/index.html.gz ../data/
