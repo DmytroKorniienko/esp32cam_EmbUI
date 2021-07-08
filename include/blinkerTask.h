@@ -8,6 +8,7 @@
 class BlinkerTask : public CustomTask {
 public:
   BlinkerTask(uint8_t pin, bool level) : CustomTask("BlinkerTask", 1024, 0, CustomTask::CORE_1), _blinker(NULL), _pin(pin), _level(level) {}
+  Blinker &getInstance() {return *_blinker;}
   void Demo();
 
 protected:

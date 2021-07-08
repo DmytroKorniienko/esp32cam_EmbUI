@@ -80,16 +80,17 @@ uint8_t ledbright = 1;
 // обработчик кнопки "Переключение светодиода"
 void led_toggle(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    if(ledcRead(1))
-        ledcWrite(1, 0);
+    LOG(printf,"btask->getInstance().getValue()=%d\n",btask->getInstance().getValue());
+    if(btask->getInstance().getValue())
+        btask->getInstance().setValue(0);
     else
-        ledcWrite(1, ledbright);
+        btask->getInstance().setValue(ledbright);
 }
 
 void set_led_bright(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
     ledbright = (*data)["ledBright"].as<int>();
-    ledcWrite(1, ledbright);
+    btask->getInstance().setValue(ledbright);
 }
 
 void set_refresh(Interface *interf, JsonObject *data)
@@ -103,15 +104,12 @@ void block_cam(Interface *interf, JsonObject *data){
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
 
-    // ledcDetachPin(1);
-    // digitalWrite(LED_PIN, HIGH);
-    ledcWrite(1, 255);
-    delay(25);
+    btask->getInstance().setValue(32);
+    delay(5);
     interf->frame2("mjpgf", "jpg");
-    delay(75);
-    ledcWrite(1, 0);
-    // digitalWrite(LED_PIN, LOW);
-    // ledcAttachPin(LED_PIN, 1);
+    delay(195);
+    btask->getInstance().setValue(0);
+
     interf->button("refresh","Обновить");
     
     interf->json_section_end();
@@ -129,7 +127,7 @@ void block_stream(Interface *interf, JsonObject *data){
     //interf->frame2("jpgframe", "jpg");
     interf->frame2("mjpgframe", "mjpeg/1");
     interf->spacer();
-    interf->range("ledBright",String(ledbright),String(1),String(4),String(1),"Уровень светимости светодиода", true);
+    interf->range("ledBright",String(ledbright),String(0),String(127),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
     
     interf->json_section_end();

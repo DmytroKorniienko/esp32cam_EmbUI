@@ -62,7 +62,7 @@
 #define USE_FTP
 
 #include "Blinker.h"
-#include "blinkerTask.h"
+#include "BlinkerTask.h"
 #include "CustomTask.h"
 #include <ArduinoJson.h>
 #include <string.h>
@@ -99,7 +99,7 @@ extern WebServer server;
 extern TaskHandle_t tMjpeg;
 extern TaskHandle_t tCam;
 extern uint8_t       noActiveClients;
-extern CustomTask *customTask;
+extern BlinkerTask *btask;
 
 #define LED_PIN GPIO_NUM_4
 #define LED_LEVEL HIGH

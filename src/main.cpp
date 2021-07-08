@@ -9,6 +9,7 @@ TaskHandle_t tCam;     // handles getting picture frames from the camera and sto
 uint8_t       noActiveClients;       // number of active clients
 // frameSync semaphore is used to prevent streaming buffer as it is replaced with the next frame
 SemaphoreHandle_t frameSync = NULL;
+BlinkerTask *btask;
 
 // ==== SETUP method ==================================================================
 void setup()
@@ -30,21 +31,23 @@ void setup()
 
 #if defined(CAMERA_MODEL_AI_THINKER)
 
-const int freq = 4096;
-const int ledChannel = 1;
-const int resolution = 16;
-ledcSetup(ledChannel, freq, resolution);
-// attach the channel to the GPIO to be controlled
-ledcAttachPin(LED_PIN, ledChannel);
-pinMode(LED_PIN, OUTPUT);
-ledcWrite(ledChannel, 0); // disable by default
+// const int freq = 4096;
+// const int ledChannel = 1;
+// const int resolution = 16;
+// ledcSetup(ledChannel, freq, resolution);
+// // attach the channel to the GPIO to be controlled
+// ledcAttachPin(LED_PIN, ledChannel);
+// pinMode(LED_PIN, OUTPUT);
+// ledcWrite(ledChannel, 0); // disable by default
 
   // // // включу светодиод
   // // pinMode(GPIO_NUM_4, OUTPUT);
   // // digitalWrite(GPIO_NUM_4, HIGH);
-  // task = new BlinkerTask(LED_PIN, LED_LEVEL);
-  // if ((! task) || (! *task))
-  //   Task::halt("Error initializing blinker task!");
+  btask = new BlinkerTask(LED_PIN, LED_LEVEL);
+  if ((! btask) || (! *btask))
+    BlinkerTask::halt("Error initializing blinker task!");
+  // else
+  //   btask->getInstance().setValue(1);
 #endif
 
   // Configure the camera

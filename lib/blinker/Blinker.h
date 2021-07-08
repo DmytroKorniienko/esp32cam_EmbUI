@@ -14,14 +14,17 @@ public:
   operator bool() {
     return _timer != NULL;
   }
-  void operator=(blinkmode_t value) {
-    setMode(value);
+  void operator=(blinkmode_t mode) {
+    setMode(mode);
   }
   void operator<<(int8_t value) {
     setValue(value);
   }
   blinkmode_t getMode() const {
     return _mode;
+  }
+  int8_t getValue() const {
+    return _value;
   }
   void setMode(blinkmode_t mode);
   void setValue(int8_t value) {

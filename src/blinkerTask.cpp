@@ -12,7 +12,8 @@ void BlinkerTask::setup() {
     }
   }
   *_blinker = Blinker::BLINK_PWM; // фиксированный уровень
-  *_blinker<<(int8_t)16;
+  //*_blinker<<(int8_t)16;
+  *_blinker<<(int8_t)0;
 }
 
 void BlinkerTask::Demo()

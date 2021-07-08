@@ -150,7 +150,8 @@ void Blinker::timerCallback() {
       if (++_value >= FADES_SIZE)
         _value = -(FADES_SIZE - 2);
     } else if (_mode == BLINK_PWM) {
-      _value = 4; // == 8
+      // тут не нужно менять значение, передаем как есть
+      //_value = 0;
     }
   }
 }
