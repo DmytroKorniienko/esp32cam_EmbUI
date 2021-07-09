@@ -5,6 +5,8 @@
 #include "EmbUI.h"
 #include "interface.h"
 
+// Photo File Name to save in LittleFS
+#define FILE_PHOTO "/photo.jpg"
 
 /**
  * Define configuration variables and controls handlers
@@ -93,9 +95,77 @@ void set_led_bright(Interface *interf, JsonObject *data){
     btask->getInstance().setValue(ledbright);
 }
 
+// Check if photo capture was successful
+bool checkPhoto( fs::FS &fs ) {
+  File f_pic = fs.open( FILE_PHOTO );
+  unsigned int pic_sz = f_pic.size();
+  return ( pic_sz > 100 );
+}
+
+// Capture Photo and Save it to LittleFS
+void capturePhotoSaveLittleFS() {
+  camera_fb_t * fb = NULL; // pointer
+  bool ok = 0; // Boolean indicating if the picture has been taken correctly
+
+  do {
+    // Take a photo with the camera
+    Serial.println("Taking a photo...");
+
+    fb = esp_camera_fb_get();
+    if (!fb) {
+      Serial.println("Camera capture failed");
+      return;
+    }
+
+    // Photo file name
+    Serial.printf("Picture file name: %s\n", FILE_PHOTO);
+    File file = LittleFS.open(FILE_PHOTO, FILE_WRITE);
+
+    // Insert the data in the photo file
+    if (!file) {
+      Serial.println("Failed to open file in writing mode");
+    }
+    else {
+      file.write(fb->buf, fb->len); // payload (image), payload length
+      Serial.print("The picture has been saved in ");
+      Serial.print(FILE_PHOTO);
+      Serial.print(" - Size: ");
+      Serial.print(file.size());
+      Serial.println(" bytes");
+    }
+    // Close the file
+    file.close();
+    esp_camera_fb_return(fb);
+
+    // check if file has been correctly saved in LittleFS
+    ok = checkPhoto(LittleFS);
+  } while ( !ok );
+}
+
+Task *_offtask = nullptr;
 void set_refresh(Interface *interf, JsonObject *data)
 {
-    block_cam(interf, data);
+    //block_cam(interf, data);
+    btask->getInstance().setValue(127);
+    delay(200);
+    capturePhotoSaveLittleFS();
+    if(!_offtask){
+        _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
+            btask->getInstance().setValue(0);
+            Interface *interf =  embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr;
+            interf->json_frame_custom("xload");
+            interf->json_section_content();
+            //interf->frame2("jpgf", "jpg");
+            interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+            interf->json_section_end();
+            interf->json_frame_flush();
+            delete interf;
+            _offtask = nullptr;
+            TASK_RECYCLE;
+        },&ts,true);
+        _offtask->enableDelayed();
+    } else
+        _offtask->restartDelayed();
 }
 
 void block_cam(Interface *interf, JsonObject *data){
@@ -103,17 +173,24 @@ void block_cam(Interface *interf, JsonObject *data){
 
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
-
-    btask->getInstance().setValue(32);
-    delay(5);
-    interf->frame2("mjpgf", "jpg");
-    delay(195);
-    btask->getInstance().setValue(0);
-
+    if(!checkPhoto(LittleFS)){
+        btask->getInstance().setValue(127);
+        delay(50);
+        interf->frame2("jpgf", "jpg");
+    } else
+        interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
     interf->button("refresh","Обновить");
-    
     interf->json_section_end();
     interf->json_frame_flush();
+    if(!_offtask){
+        _offtask = new Task(500,TASK_ONCE, []{
+            btask->getInstance().setValue(0);
+            _offtask = nullptr;
+            TASK_RECYCLE;
+        },&ts,true);
+        _offtask->enableDelayed();
+    } else
+        _offtask->restartDelayed();
 }
 
 void block_stream(Interface *interf, JsonObject *data){
