@@ -3,6 +3,14 @@
 
 #include <esp_timer.h>
 #include <driver/ledc.h>
+//#include <arduino.h>
+#include "CustomTask.h"
+#include "Blinker.h"
+
+const uint8_t FADES_SIZE = 16;
+const uint8_t FADES[FADES_SIZE] = { 0, 1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255 };
+
+int8_t abs8(int8_t value);
 
 class Blinker {
 public:
@@ -30,14 +38,13 @@ public:
   void setValue(int8_t value) {
     _value=value;
     if(_mode == BLINK_PWM){
-      ledc_set_duty(_speed_mode, _channel, _value);
+      ledc_set_duty(_speed_mode, _channel, FADES[abs8(_value)%FADES_SIZE]); // 16 градаций яркости
       ledc_update_duty(_speed_mode, _channel);
     }
-  };
+  }
 
 protected:
-  void timerCallback();
-
+  static void timerCallback(void* pObjInstance);
   struct __attribute__((__packed__)) {
     uint8_t _pin : 7;
     bool _level : 1;
@@ -47,5 +54,23 @@ protected:
     ledc_channel_t _channel : 4;
     volatile int8_t _value;
     esp_timer_handle_t _timer;
+  };
+};
+
+class BlinkerTask : public CustomTask {
+public:
+  BlinkerTask(uint8_t pin, bool level) : CustomTask("BlinkerTask", 2048, 0, CustomTask::CORE_1), _blinker(NULL), _pin(pin), _level(level) {}
+  Blinker &getInstance() {return *_blinker;}
+  void Demo();
+
+protected:
+  void setup();
+  void loop();
+  void cleanup();
+
+  struct __attribute__((__packed__)) {
+    Blinker *_blinker;
+    uint8_t _pin : 7;
+    bool _level : 1;
   };
 };

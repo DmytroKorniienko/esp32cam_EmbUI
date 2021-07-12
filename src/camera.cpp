@@ -347,7 +347,6 @@ void setCameraVar(AsyncWebServerRequest *request){
         return;
     }
 
-
     int res = 0;
     if(!strcmp(variable, "framesize")) res = s->set_framesize(s, (framesize_t)val);
     else if(!strcmp(variable, "quality")) res = s->set_quality(s, val);
@@ -375,13 +374,13 @@ void setCameraVar(AsyncWebServerRequest *request){
     else if(!strcmp(variable, "special_effect")) res = s->set_special_effect(s, val);
     else if(!strcmp(variable, "wb_mode")) res = s->set_wb_mode(s, val);
     else if(!strcmp(variable, "ae_level")) res = s->set_ae_level(s, val);
-
     else {
         log_e("unknown setting %s", var.c_str());
         request->send(404);
         return;
     }
     log_d("Got setting %s with value %d. Res: %d", var.c_str(), val, res);
+    res = res;
 
     AsyncWebServerResponse * response = request->beginResponse(200);
     response->addHeader("Access-Control-Allow-Origin", "*");

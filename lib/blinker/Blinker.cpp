@@ -4,11 +4,15 @@
 
 static const char TAG[] = "Blinker";
 
-static int8_t abs8(int8_t value) {
-  if (value < 0)
-    return -value;
-  return value;
+int8_t abs8(int8_t value) {
+  return (value < 0) ? -value : value;
 }
+
+// Blinker *Blinker::_instance = nullptr;
+
+// void callback_wrapper(){
+//   (Blinker::getInstance())->timerCallback(nullptr);
+// }
 
 Blinker::Blinker(uint8_t pin, bool level, uint32_t freq, ledc_timer_t timer_num, ledc_mode_t speed_mode, ledc_channel_t channel) {
   _pin = pin;
@@ -20,7 +24,7 @@ Blinker::Blinker(uint8_t pin, bool level, uint32_t freq, ledc_timer_t timer_num,
   _value = 0;
   {
     esp_timer_create_args_t timer_cfg = {
-      .callback = (esp_timer_cb_t)&Blinker::timerCallback,
+      .callback =  (esp_timer_cb_t)&Blinker::timerCallback,
       .arg = this
     };
 
@@ -123,35 +127,80 @@ void Blinker::setMode(blinkmode_t mode) {
   }
 }
 
-void Blinker::timerCallback() {
-  const uint8_t FADES_SIZE = 16;
-  const uint8_t FADES[FADES_SIZE] = { 0, 1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 240, 248, 252, 254, 255 };
-
-  if (_mode <= BLINK_4HZ) {
-    if (_value == 0) {
-      gpio_set_level((gpio_num_t)_pin, _level);
-    } else if (_value == 1) {
-      gpio_set_level((gpio_num_t)_pin, ! _level);
+void Blinker::timerCallback(void* pObjInstance) {
+  Blinker* pObj = (Blinker*)pObjInstance;
+  
+  if (pObj->_mode <= BLINK_4HZ) {
+    if (pObj->_value == 0) {
+      gpio_set_level((gpio_num_t)pObj->_pin, pObj->_level);
+    } else if (pObj->_value == 1) {
+      gpio_set_level((gpio_num_t)pObj->_pin, !pObj->_level);
     }
-    if (++_value >= (_mode == BLINK_05HZ ? 2000 : _mode == BLINK_1HZ ? 1000 : _mode == BLINK_2HZ ? 500 : 250) / 25)
-      _value = 0;
+    if (++pObj->_value >= (pObj->_mode == BLINK_05HZ ? 2000 : pObj->_mode == BLINK_1HZ ? 1000 : pObj->_mode == BLINK_2HZ ? 500 : 250) / 25)
+      pObj->_value = 0;
   } else { // _mode >= BLINK_FADEIN
-    if (_mode != BLINK_PWM) {
-      ledc_set_duty(_speed_mode, _channel, _level ? FADES[abs8(_value)] : 255 - FADES[abs8(_value)]);
-      ledc_update_duty(_speed_mode, _channel);
+    if (pObj->_mode != BLINK_PWM) {
+      ledc_set_duty(pObj->_speed_mode, pObj->_channel, pObj->_level ? FADES[abs8(pObj->_value)] : 255 - FADES[abs8(pObj->_value)]);
+      ledc_update_duty(pObj->_speed_mode, pObj->_channel);
     }
-    if (_mode == BLINK_FADEIN) {
-      if (++_value >= FADES_SIZE)
-        _value = 0;
-    } else if (_mode == BLINK_FADEOUT) {
-      if (--_value < 0)
-        _value = FADES_SIZE - 1;
-    } else if (_mode == BLINK_FADEINOUT) {
-      if (++_value >= FADES_SIZE)
-        _value = -(FADES_SIZE - 2);
-    } else if (_mode == BLINK_PWM) {
+    if (pObj->_mode == BLINK_FADEIN) {
+      if (++pObj->_value >= FADES_SIZE)
+        pObj->_value = 0;
+    } else if (pObj->_mode == BLINK_FADEOUT) {
+      if (--pObj->_value < 0)
+        pObj->_value = FADES_SIZE - 1;
+    } else if (pObj->_mode == BLINK_FADEINOUT) {
+      if (++pObj->_value >= FADES_SIZE)
+        pObj->_value = -(FADES_SIZE - 2);
+    } else if (pObj->_mode == BLINK_PWM) {
       // тут не нужно менять значение, передаем как есть
       //_value = 0;
     }
+  }
+}
+
+//------------------------
+
+void BlinkerTask::setup() {
+  if (_task) {
+    _blinker = new Blinker(_pin, _level, 4096, LEDC_TIMER_1, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1); // LEDC_LOW_SPEED_MODE
+    if ((! _blinker) || (! *_blinker)) {
+      if (_blinker) {
+        delete _blinker;
+        _blinker= NULL;
+      }
+      destroy();
+    }
+  }
+  *_blinker = Blinker::BLINK_PWM; // фиксированный уровень
+  *_blinker<<(int8_t)0;
+}
+
+void BlinkerTask::Demo()
+{
+  const char *BLINKS[] = { "OFF", "ON", "TOGGLE", "0.5 Hz", "1 Hz", "2 Hz", "4 Hz", "FADE IN", "FADE OUT", "FADE IN/OUT", "PWM" };
+
+  Blinker::blinkmode_t mode = _blinker->getMode();
+
+  if (mode < Blinker::BLINK_PWM)
+    mode = (Blinker::blinkmode_t)((uint8_t)mode + 1);
+  else
+    mode = Blinker::BLINK_OFF;
+  *_blinker = mode;
+  lock();
+  Serial.print("Blinker switch to ");
+  Serial.println(BLINKS[mode]);
+  unlock();
+}
+
+void BlinkerTask::loop() {
+  // Demo();
+  vTaskDelay(pdMS_TO_TICKS(5000));
+}
+
+void BlinkerTask::cleanup() {
+  if (_blinker) {
+    delete _blinker;
+    _blinker = NULL;
   }
 }

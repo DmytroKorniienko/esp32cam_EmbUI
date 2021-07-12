@@ -38,7 +38,6 @@
 #define PRO_CPU 0
 
 #include "esp_camera.h"
-#include "ov2640.h"
 #include <WiFi.h>
 #include <WebServer.h>
 #include <WiFiClient.h>
@@ -62,7 +61,6 @@
 #define USE_FTP
 
 #include "Blinker.h"
-#include "BlinkerTask.h"
 #include "CustomTask.h"
 #include <ArduinoJson.h>
 #include <string.h>

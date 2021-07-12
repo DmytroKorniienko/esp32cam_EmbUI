@@ -1,6 +1,6 @@
-//#define __IDPREFIX F("EmbUI-")
 #include "main.h"
-
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 // ===== rtos task handles =========================
 // Streaming is implemented with 3 tasks:
@@ -14,40 +14,23 @@ BlinkerTask *btask;
 // ==== SETUP method ==================================================================
 void setup()
 {
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+
   // Setup Serial connection:
   Serial.begin(460800);
   //delay(1000); // wait for a second to let Serial connect
   Serial.printf("setup: free heap  : %d\n", ESP.getFreeHeap());
 
-  create_parameters(); // создаем дефолтные параметры, отсутствующие в текущем загруженном конфиге
+  //create_parameters(); // создаем дефолтные параметры, отсутствующие в текущем загруженном конфиге
 #ifdef USE_FTP
   ftp_setup(); // запуск ftp-сервера
 #endif
-  //sync_parameters();
   embui.begin(); // Инициализируем EmbUI фреймворк.
 
-  //Serial.println("Проверка тут");
-  //embui.mqtt(embui.param(F("m_host")), embui.param(F("m_port")).toInt(), embui.param(F("m_user")), embui.param(F("m_pass")), mqttCallback, true); // false - никакой автоподписки!!!
-
 #if defined(CAMERA_MODEL_AI_THINKER)
-
-// const int freq = 4096;
-// const int ledChannel = 1;
-// const int resolution = 16;
-// ledcSetup(ledChannel, freq, resolution);
-// // attach the channel to the GPIO to be controlled
-// ledcAttachPin(LED_PIN, ledChannel);
-// pinMode(LED_PIN, OUTPUT);
-// ledcWrite(ledChannel, 0); // disable by default
-
-  // // // включу светодиод
-  // // pinMode(GPIO_NUM_4, OUTPUT);
-  // // digitalWrite(GPIO_NUM_4, HIGH);
   btask = new BlinkerTask(LED_PIN, LED_LEVEL);
   if ((! btask) || (! *btask))
     BlinkerTask::halt("Error initializing blinker task!");
-  // else
-  //   btask->getInstance().setValue(1);
 #endif
 
   // Configure the camera
@@ -175,11 +158,7 @@ void setup()
 void loop() {
   embui.handle(); // цикл, необходимый фреймворку (временно)
 #ifdef USE_FTP
-    ftp_loop(); // цикл обработки событий фтп-сервера
+  ftp_loop(); // цикл обработки событий фтп-сервера
 #endif
-  // this seems to be necessary to let IDLE task run and do GC
-  // vTaskDelay(10000);
-  vTaskDelay(10);
-  // // переключу светодиод
-  // digitalWrite(GPIO_NUM_4, !digitalRead(GPIO_NUM_4));
+  vTaskDelay(100);
 }

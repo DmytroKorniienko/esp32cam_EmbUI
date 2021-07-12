@@ -1,18 +1,18 @@
 #ifndef __CUSTOMTASK_H
 #define __CUSTOMTASK_H
-#pragma once
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
 #include <freertos/task.h>
 #include <freertos/portmacro.h>
 #include <HardwareSerial.h>
+#include <string>
 
 class CustomTask {
 public:
-  enum core_t : uint8_t { CORE_0 = 0, CORE_1, CORE_ANY };
+  enum core_t : uint32_t { CORE_0 = 0, CORE_1, CORE_ANY = tskNO_AFFINITY };
 
-  CustomTask(const char *name, uint32_t stack, uint8_t priority = 1, core_t core = CORE_ANY);
+  CustomTask(const char *name = "CustomTask", uint32_t stack = 2048, uint8_t priority = 1, core_t core = CORE_ANY);
   virtual ~CustomTask() {
     destroy();
   }
@@ -37,13 +37,23 @@ protected:
   virtual void loop() = 0;
   virtual void cleanup() {};
 
-  void taskHandler();
+  static void taskHandler(void* pTaskInstance);
+  static void delay(int ms);
+  void stop();
+	void setStackSize(uint16_t stackSize);
+	void setPriority(uint8_t priority);
+	void setName(const char *name);
+	void setCore(BaseType_t coreId);
+  void start(void* taskData = nullptr);
 
+  std::string _taskName;
+  void*       _taskData;
+	uint16_t    _stackSize;
+	uint8_t     _priority;
+	BaseType_t  _coreId;
+  TaskHandle_t _task;
   static portMUX_TYPE _mutex;
   EventGroupHandle_t _flags;
-  TaskHandle_t _task;
 };
-
-extern CustomTask *task;
 
 #endif

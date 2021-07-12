@@ -63,7 +63,7 @@ void block_menu(Interface *interf, JsonObject *data){
 void section_main_frame(Interface *interf, JsonObject *data){
     if (!interf) return;
 
-    interf->json_frame_interface("esp32camdemo");  // HEADLINE for WebUI
+    interf->json_frame_interface("esp32cam");  // HEADLINE for WebUI
     block_menu(interf, data);
     //block_cam(interf, data);
     interf->json_frame_flush();
@@ -198,13 +198,13 @@ void block_stream(Interface *interf, JsonObject *data){
     //LOG(println, "Here");
 
     interf->json_frame_interface();
-    interf->json_section_main(String("esp32cam"), String("ESP32CAM"));
+    interf->json_section_main(String("esp32cam"), String("ESP32CAM STREAM"));
 
     //interf->frame("jpgframe", "<iframe class=\"iframe\" src=\"jpg\"></iframe>"); // marginheight=\"0\" marginwidth=\"0\" width=\"100%\" height=\"100%\" frameborder=\"0\" scrolling=\"yes\"
     //interf->frame2("jpgframe", "jpg");
     interf->frame2("mjpgframe", "mjpeg/1");
     interf->spacer();
-    interf->range("ledBright",String(ledbright),String(0),String(127),String(1),"Уровень светимости светодиода", true);
+    interf->range("ledBright",String(ledbright),String(0),String(15),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
     
     interf->json_section_end();
