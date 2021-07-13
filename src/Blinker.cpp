@@ -8,12 +8,6 @@ int8_t abs8(int8_t value) {
   return (value < 0) ? -value : value;
 }
 
-// Blinker *Blinker::_instance = nullptr;
-
-// void callback_wrapper(){
-//   (Blinker::getInstance())->timerCallback(nullptr);
-// }
-
 Blinker::Blinker(uint8_t pin, bool level, uint32_t freq, ledc_timer_t timer_num, ledc_mode_t speed_mode, ledc_channel_t channel) {
   _pin = pin;
   _level = level;
@@ -163,7 +157,7 @@ void Blinker::timerCallback(void* pObjInstance) {
 
 void BlinkerTask::setup() {
   if (_task) {
-    _blinker = new Blinker(_pin, _level, 4096, LEDC_TIMER_1, LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1); // LEDC_LOW_SPEED_MODE
+    _blinker = new Blinker(_pin, _level, 4096, LEDC_TIMER_1, LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0); // LEDC_LOW_SPEED_MODE LEDC_HIGH_SPEED_MODE
     if ((! _blinker) || (! *_blinker)) {
       if (_blinker) {
         delete _blinker;

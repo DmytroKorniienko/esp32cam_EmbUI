@@ -82,17 +82,12 @@ uint8_t ledbright = 1;
 // обработчик кнопки "Переключение светодиода"
 void led_toggle(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    LOG(printf,"btask->getInstance().getValue()=%d\n",btask->getInstance().getValue());
-    if(btask->getInstance().getValue())
-        btask->getInstance().setValue(0);
-    else
-        btask->getInstance().setValue(ledbright);
+    btask->toggle();
 }
 
 void set_led_bright(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    ledbright = (*data)["ledBright"].as<int>();
-    btask->getInstance().setValue(ledbright);
+    btask->setBright((*data)["ledBright"].as<int8_t>());
 }
 
 // Check if photo capture was successful
@@ -145,13 +140,12 @@ void capturePhotoSaveLittleFS() {
 Task *_offtask = nullptr;
 void set_refresh(Interface *interf, JsonObject *data)
 {
-    //block_cam(interf, data);
-    btask->getInstance().setValue(127);
+    btask->setBright(7);
     delay(200);
     capturePhotoSaveLittleFS();
     if(!_offtask){
         _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
-            btask->getInstance().setValue(0);
+            btask->off();
             Interface *interf =  embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr;
             interf->json_frame_custom("xload");
             interf->json_section_content();
@@ -174,7 +168,7 @@ void block_cam(Interface *interf, JsonObject *data){
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
     if(!checkPhoto(LittleFS)){
-        btask->getInstance().setValue(127);
+        btask->setBright(7);
         delay(50);
         interf->frame2("jpgf", "jpg");
     } else
@@ -184,7 +178,7 @@ void block_cam(Interface *interf, JsonObject *data){
     interf->json_frame_flush();
     if(!_offtask){
         _offtask = new Task(500,TASK_ONCE, []{
-            btask->getInstance().setValue(0);
+            btask->off();
             _offtask = nullptr;
             TASK_RECYCLE;
         },&ts,true);

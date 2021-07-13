@@ -3,7 +3,6 @@
 
 #include <esp_timer.h>
 #include <driver/ledc.h>
-//#include <arduino.h>
 #include "CustomTask.h"
 #include "Blinker.h"
 
@@ -14,7 +13,7 @@ int8_t abs8(int8_t value);
 
 class Blinker {
 public:
-  enum blinkmode_t { BLINK_OFF, BLINK_ON, BLINK_TOGGLE, BLINK_05HZ, BLINK_1HZ, BLINK_2HZ, BLINK_4HZ, BLINK_FADEIN, BLINK_FADEOUT, BLINK_FADEINOUT, BLINK_PWM };
+  typedef enum blinkmode_t { BLINK_OFF, BLINK_ON, BLINK_TOGGLE, BLINK_05HZ, BLINK_1HZ, BLINK_2HZ, BLINK_4HZ, BLINK_FADEIN, BLINK_FADEOUT, BLINK_FADEINOUT, BLINK_PWM } BLINKMODE;
 
   Blinker(uint8_t pin, bool level, uint32_t freq = 1000, ledc_timer_t timer_num = LEDC_TIMER_3, ledc_mode_t speed_mode = LEDC_LOW_SPEED_MODE, ledc_channel_t channel = LEDC_CHANNEL_7);
   ~Blinker();
@@ -60,7 +59,20 @@ protected:
 class BlinkerTask : public CustomTask {
 public:
   BlinkerTask(uint8_t pin, bool level) : CustomTask("BlinkerTask", 2048, 0, CustomTask::CORE_1), _blinker(NULL), _pin(pin), _level(level) {}
-  Blinker &getInstance() {return *_blinker;}
+  Blinker &getBlinker() {return *_blinker;}
+  void off() { if(_blinker) _blinker->setMode(Blinker::BLINK_OFF); }
+  void toggle() { if(_blinker){
+      if(_blinker->getValue() && _blinker->getMode() == Blinker::BLINK_PWM){
+          _ledbright = _blinker->getValue();
+          _blinker->setMode(Blinker::BLINK_OFF);
+      }
+      else {
+          _blinker->setMode(Blinker::BLINK_PWM);
+          _blinker->setValue(_ledbright);
+      } 
+    }
+  }
+  void setBright(int8_t val) { if(_blinker){ _blinker->setMode(Blinker::BLINK_PWM); _blinker->setValue(val); } }
   void Demo();
 
 protected:
@@ -70,6 +82,7 @@ protected:
 
   struct __attribute__((__packed__)) {
     Blinker *_blinker;
+    int8_t _ledbright = 1;
     uint8_t _pin : 7;
     bool _level : 1;
   };

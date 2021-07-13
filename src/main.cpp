@@ -29,8 +29,8 @@ void setup()
 
 #if defined(CAMERA_MODEL_AI_THINKER)
   btask = new BlinkerTask(LED_PIN, LED_LEVEL);
-  if ((! btask) || (! *btask))
-    BlinkerTask::halt("Error initializing blinker task!");
+  if ((!btask) || (!*btask))
+    BlinkerTask::halt("Error initializing blinker task!", btask);
 #endif
 
   // Configure the camera
