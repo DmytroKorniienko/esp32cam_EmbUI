@@ -140,12 +140,14 @@ void capturePhotoSaveLittleFS() {
 Task *_offtask = nullptr;
 void set_refresh(Interface *interf, JsonObject *data)
 {
+    if(_offtask) return;
+    
     btask->setBright(7);
     delay(200);
     capturePhotoSaveLittleFS();
+    btask->setLedOffAfterMS(200);
     if(!_offtask){
         _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
-            btask->off();
             Interface *interf =  embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr;
             interf->json_frame_custom("xload");
             interf->json_section_content();
@@ -165,26 +167,19 @@ void set_refresh(Interface *interf, JsonObject *data)
 void block_cam(Interface *interf, JsonObject *data){
     if (!interf) return;
 
+    btask->off();
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
     if(!checkPhoto(LittleFS)){
         btask->setBright(7);
         delay(50);
         interf->frame2("jpgf", "jpg");
+        btask->setLedOffAfterMS(500);
     } else
         interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
     interf->button("refresh","Обновить");
     interf->json_section_end();
     interf->json_frame_flush();
-    if(!_offtask){
-        _offtask = new Task(500,TASK_ONCE, []{
-            btask->off();
-            _offtask = nullptr;
-            TASK_RECYCLE;
-        },&ts,true);
-        _offtask->enableDelayed();
-    } else
-        _offtask->restartDelayed();
 }
 
 void block_stream(Interface *interf, JsonObject *data){

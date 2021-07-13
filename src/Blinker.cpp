@@ -95,8 +95,10 @@ void Blinker::setMode(blinkmode_t mode) {
             return;
           }
         } else if(_mode == BLINK_PWM){
-          ledc_set_duty(_speed_mode, _channel, _value);
-          ledc_update_duty(_speed_mode, _channel);
+          //ledc_set_duty(_speed_mode, _channel, _value);
+          //ledc_update_duty(_speed_mode, _channel);
+          setValue(_value);
+          return;
         }
       }
       _value = 0;
@@ -147,8 +149,12 @@ void Blinker::timerCallback(void* pObjInstance) {
       if (++pObj->_value >= FADES_SIZE)
         pObj->_value = -(FADES_SIZE - 2);
     } else if (pObj->_mode == BLINK_PWM) {
-      // тут не нужно менять значение, передаем как есть
-      //_value = 0;
+      if(pObj->_timeout){ // таймаут отключения
+        if(millis()-pObj->_ms>pObj->_timeout){
+          pObj->_timeout = 0;
+          pObj->setMode(BLINK_OFF);
+        }
+      }
     }
   }
 }

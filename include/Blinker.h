@@ -41,7 +41,7 @@ public:
       ledc_update_duty(_speed_mode, _channel);
     }
   }
-
+  void setupTimeout(uint16_t timeout) {_ms = millis(); _timeout = timeout;}
 protected:
   static void timerCallback(void* pObjInstance);
   struct __attribute__((__packed__)) {
@@ -52,6 +52,8 @@ protected:
     ledc_mode_t _speed_mode : 2;
     ledc_channel_t _channel : 4;
     volatile int8_t _value;
+    volatile uint16_t _timeout;
+    volatile unsigned long _ms;
     esp_timer_handle_t _timer;
   };
 };
@@ -73,6 +75,7 @@ public:
     }
   }
   void setBright(int8_t val) { if(_blinker){ _blinker->setMode(Blinker::BLINK_PWM); _blinker->setValue(val); } }
+  void setLedOffAfterMS(uint16_t ms) { if(_blinker){ _blinker->setupTimeout(ms); } }
   void Demo();
 
 protected:
