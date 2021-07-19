@@ -163,7 +163,7 @@ void Blinker::timerCallback(void* pObjInstance) {
 
 void BlinkerTask::setup() {
   if (_task) {
-    _blinker = new Blinker(_pin, _level, 4096, LEDC_TIMER_1, LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0); // LEDC_LOW_SPEED_MODE LEDC_HIGH_SPEED_MODE
+    _blinker = new Blinker(_pin, _level, 4096, LEDC_TIMER_3, LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_7); // LEDC_LOW_SPEED_MODE LEDC_HIGH_SPEED_MODE
     if ((! _blinker) || (! *_blinker)) {
       if (_blinker) {
         delete _blinker;

@@ -19,7 +19,8 @@ void setup()
   // Setup Serial connection:
   Serial.begin(460800);
   //delay(1000); // wait for a second to let Serial connect
-  Serial.printf("setup: free heap  : %d\n", ESP.getFreeHeap());
+  Serial.printf("\n\nsetup: free heap  : %d\n", ESP.getFreeHeap());
+  Serial.printf("setup: free PSRAM  : %d\n", ESP.getFreePsram());
 
   //create_parameters(); // создаем дефолтные параметры, отсутствующие в текущем загруженном конфиге
 #ifdef USE_FTP
