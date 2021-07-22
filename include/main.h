@@ -58,7 +58,7 @@
 
 #include "camera_pins.h"
 
-#define USE_FTP
+//#define USE_FTP
 
 #include "Blinker.h"
 #include "CustomTask.h"
