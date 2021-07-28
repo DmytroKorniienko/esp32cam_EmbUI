@@ -125,7 +125,7 @@ void capturePhotoSaveLittleFS() {
       Serial.print("The picture has been saved in ");
       Serial.print(FILE_PHOTO);
       Serial.print(" - Size: ");
-      Serial.print(file.size());
+      Serial.print(fb->len);
       Serial.println(" bytes");
     }
     // Close the file
@@ -148,11 +148,15 @@ void set_refresh(Interface *interf, JsonObject *data)
     btask->setLedOffAfterMS(200);
     if(!_offtask){
         _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
+            LOG(println, "Update WebUI");
             Interface *interf =  embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr;
-            interf->json_frame_custom("xload");
-            interf->json_section_content();
+            //interf->json_frame_custom("xload");
+            //interf->json_section_content();
+            interf->json_frame_interface();
+            interf->json_section_begin("photo");
             //interf->frame2("jpgf", "jpg");
-            interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+            //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+            interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
             interf->json_section_end();
             interf->json_frame_flush();
             delete interf;
@@ -170,13 +174,17 @@ void block_cam(Interface *interf, JsonObject *data){
     btask->off();
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
+    interf->json_section_begin("photo");
     if(!checkPhoto(LittleFS)){
         btask->setBright(7);
         delay(50);
-        interf->frame2("jpgf", "jpg");
+        //interf->frame2("jpgf", "jpg");
+        interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
         btask->setLedOffAfterMS(500);
     } else
-        interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+        //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+        interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
+    interf->json_section_end();
     interf->button("refresh","Обновить");
     interf->json_section_end();
     interf->json_frame_flush();
@@ -191,7 +199,8 @@ void block_stream(Interface *interf, JsonObject *data){
 
     //interf->frame("jpgframe", "<iframe class=\"iframe\" src=\"jpg\"></iframe>"); // marginheight=\"0\" marginwidth=\"0\" width=\"100%\" height=\"100%\" frameborder=\"0\" scrolling=\"yes\"
     //interf->frame2("jpgframe", "jpg");
-    interf->frame2("mjpgframe", "mjpeg/1");
+    //interf->frame2("mjpgframe", "mjpeg/1");
+    interf->image("stream", "mjpeg/1");
     interf->spacer();
     interf->range("ledBright",String(ledbright),String(0),String(15),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
