@@ -150,10 +150,10 @@ void set_refresh(Interface *interf, JsonObject *data)
         _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
             LOG(println, "Update WebUI");
             Interface *interf =  embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr;
-            //interf->json_frame_custom("xload");
-            //interf->json_section_content();
-            interf->json_frame_interface();
-            interf->json_section_begin("photo");
+            interf->json_frame_custom("xload");
+            interf->json_section_content();
+            //interf->json_frame_interface();
+            //interf->json_section_begin("photo");
             //interf->frame2("jpgf", "jpg");
             //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
             interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
@@ -174,7 +174,7 @@ void block_cam(Interface *interf, JsonObject *data){
     btask->off();
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
-    interf->json_section_begin("photo");
+    //interf->json_section_begin("photo");
     if(!checkPhoto(LittleFS)){
         btask->setBright(7);
         delay(50);
@@ -184,7 +184,7 @@ void block_cam(Interface *interf, JsonObject *data){
     } else
         //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
         interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
-    interf->json_section_end();
+    //interf->json_section_end();
     interf->button("refresh","Обновить");
     interf->json_section_end();
     interf->json_frame_flush();
