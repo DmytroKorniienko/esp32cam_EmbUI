@@ -94,7 +94,12 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
         size_t _index;
         size_t _jpg_buf_len;
         uint8_t * _jpg_buf;
-        uint64_t lastAsyncRequest;
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO        
+        uint64_t lastAsyncRequest = 0;
+        float fps = 0.0;
+        uint8_t frameCnt = 0;
+        uint64_t frame_ms_1s = 0;
+#endif
     public:
         AsyncJpegStreamResponse(){
             _callback = nullptr;
@@ -106,7 +111,6 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
             _index = 0;
             _jpg_buf_len = 0;
             _jpg_buf = NULL;
-            lastAsyncRequest = 0;
             memset(&_frame, 0, sizeof(camera_frame_t));
         }
         ~AsyncJpegStreamResponse(){
@@ -116,6 +120,7 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
                 }
                 esp_camera_fb_return(_frame.fb);
             }
+            log_i("Stream closed");
         }
         bool _sourceValid() const {
             return true;
@@ -130,10 +135,17 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
         size_t _content(uint8_t *buffer, size_t maxLen, size_t index){
             if(!_frame.fb || _frame.index == _jpg_buf_len){
                 if(index && _frame.fb){
-                    uint64_t end = (uint64_t)millis(); //micros();
-                    int fp = (end - lastAsyncRequest) / 1000;
-                    //log_printf("Size: %uKB, Time: %ums (%.1ffps)\n", _jpg_buf_len/1024, fp);
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+                    uint64_t end = (uint64_t)micros();
+                    frameCnt++;
+                    if(frame_ms_1s+1000<end/1000){
+                        fps = (fps + (float)frameCnt / (0.001*(0.001*end - frame_ms_1s))) / 2.0;
+                        frame_ms_1s = end/1000; // ms
+                        frameCnt = 0;
+                        log_i("Size: %uKB, Time: %lums (%.1ffps)\n", _jpg_buf_len/1024, (unsigned long)((end - lastAsyncRequest) / 1000), fps); // ~1 sec period
+                    }
                     lastAsyncRequest = end;
+#endif
                     if(_frame.fb->format != PIXFORMAT_JPEG){
                         free(_jpg_buf);
                     }
@@ -156,7 +168,9 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
                 }
 
                 if(_frame.fb->format != PIXFORMAT_JPEG){
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
                     unsigned long st = millis();
+#endif
                     bool jpeg_converted = frame2jpg(_frame.fb, 80, &_jpg_buf, &_jpg_buf_len);
                     if(!jpeg_converted){
                         log_e("JPEG compression failed");
@@ -204,8 +218,7 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
         }
 };
 
-
-void sendBMP(AsyncWebServerRequest *request){
+void EMBUICAMERA::sendBMP(AsyncWebServerRequest *request){
     camera_fb_t * fb = esp_camera_fb_get();
     if (fb == NULL) {
         log_e("Camera frame failed");
@@ -215,7 +228,9 @@ void sendBMP(AsyncWebServerRequest *request){
 
     uint8_t * buf = NULL;
     size_t buf_len = 0;
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
     unsigned long st = millis();
+#endif
     bool converted = frame2bmp(fb, &buf, &buf_len);
     log_i("BMP: %lums, %uB", millis() - st, buf_len);
     esp_camera_fb_return(fb);
@@ -234,7 +249,7 @@ void sendBMP(AsyncWebServerRequest *request){
     request->send(response);
 }
 
-void sendJpg(AsyncWebServerRequest *request){
+void EMBUICAMERA::sendJpg(AsyncWebServerRequest *request){
     camera_fb_t * fb = esp_camera_fb_get();
     if (fb == NULL) {
         log_e("Camera frame failed");
@@ -256,7 +271,9 @@ void sendJpg(AsyncWebServerRequest *request){
 
     size_t jpg_buf_len = 0;
     uint8_t * jpg_buf = NULL;
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
     unsigned long st = millis();
+#endif
     bool jpeg_converted = frame2jpg(fb, 80, &jpg_buf, &jpg_buf_len);
     esp_camera_fb_return(fb);
     if(!jpeg_converted){
@@ -276,8 +293,7 @@ void sendJpg(AsyncWebServerRequest *request){
     request->send(response);
 }
 
-
-void streamJpg(AsyncWebServerRequest *request){
+void EMBUICAMERA::streamJpg(AsyncWebServerRequest *request){
     AsyncJpegStreamResponse *response = new AsyncJpegStreamResponse();
     if(!response){
         request->send(501);
@@ -287,7 +303,7 @@ void streamJpg(AsyncWebServerRequest *request){
     request->send(response);
 }
 
-void getCameraStatus(AsyncWebServerRequest *request){
+void EMBUICAMERA::getCameraStatus(AsyncWebServerRequest *request){
     static char json_response[1024];
 
     sensor_t * s = esp_camera_sensor_get();
@@ -332,7 +348,7 @@ void getCameraStatus(AsyncWebServerRequest *request){
     request->send(response);
 }
 
-void setCameraVar(AsyncWebServerRequest *request){
+void EMBUICAMERA::setCameraVar(AsyncWebServerRequest *request){
     if(!request->hasArg("var") || !request->hasArg("val")){
         request->send(404);
         return;
@@ -386,6 +402,28 @@ void setCameraVar(AsyncWebServerRequest *request){
     response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
 }
+
+// ==== Handle invalid URL requests ============================================
+void EMBUICAMERA::handleNotFound(AsyncWebServerRequest *request)
+{
+  String message = "Server is running!\n\n";
+  message += "URI: ";
+  message += request->url();
+  message += "\nMethod: ";
+  message += (request->method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += request->args();
+  message += "\n";
+  request->send(200, "text / plain", message);
+}
+
+// deprecated ------------------------------------------------------------------
+
+/*
+const char JHEADER[] = "HTTP/1.1 200 OK\r\n" \
+                       "Content-disposition: inline; filename=capture.jpg\r\n" \
+                       "Content-type: image/jpeg\r\n\r\n";
+const int jhdLen = strlen(JHEADER);
 
 // ======== Server Connection Handler Task ==========================
 void mjpegCB(void* pvParameters) {
@@ -499,7 +537,6 @@ void camCB(void* pvParameters) {
     }
   }
 }
-
 
 // ==== Memory allocator that takes advantage of PSRAM if present =======================
 char* allocateMemory(char* aPtr, size_t aSize) {
@@ -644,79 +681,4 @@ void streamCB(void * pvParameters) {
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
-
-
-
-const char JHEADER[] = "HTTP/1.1 200 OK\r\n" \
-                       "Content-disposition: inline; filename=capture.jpg\r\n" \
-                       "Content-type: image/jpeg\r\n\r\n";
-const int jhdLen = strlen(JHEADER);
-
-// ==== Serve up one JPEG frame =============================================
-void handleJPG(AsyncWebServerRequest *request)
-{
-  // AsyncClient *client = request->client();
-
-  // if (!client->connected()) return;
-  // camera_fb_t* fb = esp_camera_fb_get();
-  // client->write(JHEADER, jhdLen);
-  // client->write((char*)fb->buf, fb->len);
-  // esp_camera_fb_return(fb);
-
-    camera_fb_t * fb = esp_camera_fb_get();
-    if (fb == NULL) {
-        log_e("Camera frame failed");
-        request->send(501);
-        return;
-    }
-
-    if(fb->format == PIXFORMAT_JPEG){
-        AsyncFrameResponse * response = new AsyncFrameResponse(fb, JPG_CONTENT_TYPE);
-        if (response == NULL) {
-            log_e("Response alloc failed");
-            request->send(501);
-            return;
-        }
-        response->addHeader("Access-Control-Allow-Origin", "*");
-        request->send(response);
-        return;
-    }
-
-    size_t jpg_buf_len = 0;
-    uint8_t * jpg_buf = NULL;
-    unsigned long st = millis();
-    bool jpeg_converted = frame2jpg(fb, 80, &jpg_buf, &jpg_buf_len);
-    esp_camera_fb_return(fb);
-    if(!jpeg_converted){
-        log_e("JPEG compression failed: %lu", millis());
-        request->send(501);
-        return;
-    }
-    log_i("JPEG: %lums, %uB", millis() - st, jpg_buf_len);
-
-    AsyncBufferResponse * response = new AsyncBufferResponse(jpg_buf, jpg_buf_len, JPG_CONTENT_TYPE);
-    if (response == NULL) {
-        log_e("Response alloc failed");
-        request->send(501);
-        return;
-    }
-    response->addHeader("Access-Control-Allow-Origin", "*");
-    request->send(response);
-
-
-}
-
-
-// ==== Handle invalid URL requests ============================================
-void handleNotFound(AsyncWebServerRequest *request)
-{
-  String message = "Server is running!\n\n";
-  message += "URI: ";
-  message += request->url();
-  message += "\nMethod: ";
-  message += (request->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += request->args();
-  message += "\n";
-  request->send(200, "text / plain", message);
-}
+*/

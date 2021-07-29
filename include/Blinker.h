@@ -74,7 +74,8 @@ public:
       } 
     }
   }
-  void setBright(int8_t val) { if(_blinker){ _blinker->setMode(Blinker::BLINK_PWM); _blinker->setValue(val); } }
+  void setBright(int8_t val) { if(_blinker){ _blinker->setMode(Blinker::BLINK_PWM); _blinker->setValue(val); _ledbright = val; } }
+  int8_t getBright() {return _ledbright;}
   void setLedOffAfterMS(uint16_t ms) { if(_blinker){ _blinker->setupTimeout(ms); } }
   void Demo();
 

@@ -1,12 +1,9 @@
 #include "main.h"
-
 #include "ui.h"
 #include "basicui.h"
 #include "EmbUI.h"
 #include "interface.h"
-
-// Photo File Name to save in LittleFS
-#define FILE_PHOTO "/photo.jpg"
+#include "config.h"
 
 /**
  * Define configuration variables and controls handlers
@@ -77,17 +74,15 @@ void section_main_frame(Interface *interf, JsonObject *data){
     }
 }
 
-uint8_t ledbright = 1;
-
 // обработчик кнопки "Переключение светодиода"
 void led_toggle(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    btask->toggle();
+    camera->toggleLed();
 }
 
 void set_led_bright(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    btask->setBright((*data)["ledBright"].as<int8_t>());
+    camera->setLedBright((*data)["ledBright"].as<int8_t>());
 }
 
 // Check if photo capture was successful
@@ -142,10 +137,10 @@ void set_refresh(Interface *interf, JsonObject *data)
 {
     if(_offtask) return;
     
-    btask->setBright(7);
+    camera->setLedBright(7);
     delay(200);
     capturePhotoSaveLittleFS();
-    btask->setLedOffAfterMS(200);
+    camera->setLedOffAfterMS(200);
     if(!_offtask){
         _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
             LOG(println, "Update WebUI");
@@ -171,16 +166,16 @@ void set_refresh(Interface *interf, JsonObject *data)
 void block_cam(Interface *interf, JsonObject *data){
     if (!interf) return;
 
-    btask->off();
+    camera->setLedOff();
     interf->json_frame_interface();
     interf->json_section_main(String("jpg"), String("ESP32CAM"));
     //interf->json_section_begin("photo");
     if(!checkPhoto(LittleFS)){
-        btask->setBright(7);
+        camera->setLedBright(7);
         delay(50);
         //interf->frame2("jpgf", "jpg");
         interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
-        btask->setLedOffAfterMS(500);
+        camera->setLedOffAfterMS(500);
     } else
         //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
         interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
@@ -200,9 +195,9 @@ void block_stream(Interface *interf, JsonObject *data){
     //interf->frame("jpgframe", "<iframe class=\"iframe\" src=\"jpg\"></iframe>"); // marginheight=\"0\" marginwidth=\"0\" width=\"100%\" height=\"100%\" frameborder=\"0\" scrolling=\"yes\"
     //interf->frame2("jpgframe", "jpg");
     //interf->frame2("mjpgframe", "mjpeg/1");
-    interf->image("stream", "mjpeg/1");
+    interf->image("stream", "stream");
     interf->spacer();
-    interf->range("ledBright",String(ledbright),String(0),String(15),String(1),"Уровень светимости светодиода", true);
+    interf->range("ledBright",String(camera->getLedBright()),String(0),String(15),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
     
     interf->json_section_end();
