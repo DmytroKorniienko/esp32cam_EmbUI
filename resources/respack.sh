@@ -93,7 +93,7 @@ rm -f embui.zip
 # update static files if newer
 [ ! -f ../data/index.html.gz ]  || [ html/index.html -nt ../data/index.html.gz ] && gzip -9k html/index.html && mv -f html/index.html.gz ../data/
 [ ! -f ../data/favicon.ico.gz ] || [ html/favicon.ico -nt ../data/favicon.ico.gz ] &&  gzip -9k html/favicon.ico && mv -f html/favicon.ico.gz ../data/
-
+[ ! -f ../data/camera.html.gz ]  || [ html/camera.html -nt ../data/camera.html.gz ] && gzip -9k html/camera.html && mv -f html/camera.html.gz ../data/
 
 mv -f newetags.txt $tags
 

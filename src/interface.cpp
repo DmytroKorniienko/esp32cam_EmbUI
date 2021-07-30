@@ -192,10 +192,9 @@ void block_stream(Interface *interf, JsonObject *data){
     interf->json_frame_interface();
     interf->json_section_main(String("esp32cam"), String("ESP32CAM STREAM"));
 
-    //interf->frame("jpgframe", "<iframe class=\"iframe\" src=\"jpg\"></iframe>"); // marginheight=\"0\" marginwidth=\"0\" width=\"100%\" height=\"100%\" frameborder=\"0\" scrolling=\"yes\"
-    //interf->frame2("jpgframe", "jpg");
-    //interf->frame2("mjpgframe", "mjpeg/1");
-    interf->image("stream", "stream");
+    //interf->raw_html("jpgframe", "<iframe class=\"iframe\" src=\"jpg\"></iframe>"); // marginheight=\"0\" marginwidth=\"0\" width=\"100%\" height=\"100%\" frameborder=\"0\" scrolling=\"yes\"
+    interf->iframe("stream", "/camera.html");
+    //interf->image("stream", "/stream");
     interf->spacer();
     interf->range("ledBright",String(camera->getLedBright()),String(0),String(15),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
