@@ -85,7 +85,7 @@ public:
       .pin_href       = HREF_GPIO_NUM,
       .pin_pclk       = PCLK_GPIO_NUM,
 
-      .xclk_freq_hz   = 20000000,
+      .xclk_freq_hz   = 20000000, //16500000, // 20000000,
       .ledc_timer     = LEDC_TIMER_0,
       .ledc_channel   = LEDC_CHANNEL_0,
       .pixel_format   = PIXFORMAT_JPEG,
@@ -111,7 +111,7 @@ public:
       //.frame_size     = FRAMESIZE_VGA,
       .frame_size     = FRAMESIZE_UXGA,
       .jpeg_quality   = 16,
-      .fb_count       = 2
+      .fb_count       = 16 // 2
     };
 
 #if defined(CAMERA_MODEL_ESP_EYE)
