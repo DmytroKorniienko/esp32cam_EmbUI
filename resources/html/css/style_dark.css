@@ -23,6 +23,7 @@ esp32cam overrides for EmbUI Styles
 	font-size: 100%;
 	padding: .4375em  1em;
 	color: #222;
+	background-color: #999;
 	border: 1px solid #ccccccd9;
 	text-decoration: none;
 	border-radius: 10px;
@@ -75,7 +76,10 @@ esp32cam overrides for EmbUI Styles
 .pure-form-stacked textarea{
 	display:block;
 }
-
+.pure-button-primary, .pure-button-selected, a.pure-button-primary, a.pure-button-selected {
+    background-color: #0078e7;
+    color: #fff;
+}
 .select-editable input{
 	font-family:sans-serif;
 	font-weight: bold;
