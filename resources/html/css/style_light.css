@@ -22,9 +22,8 @@ esp32cam overrides for EmbUI Styles
 	box-sizing:border-box;
 	font-size: 100%;
 	padding: .4375em  1em;
-	color: rgb(255, 255, 255);
+	color: #222;
 	border: 1px solid #ccccccd9;
-	background-color: #0078e7;
 	text-decoration: none;
 	border-radius: 30px;
 	box-shadow: 5px 9px 9px #777;
