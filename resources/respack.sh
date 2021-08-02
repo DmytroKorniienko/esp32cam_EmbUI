@@ -47,7 +47,7 @@ freshtag(){
 }
 
 
-echo "Preparing resources for FireLamp FS image into ../data/ dir" 
+echo "Preparing resources for esp32cam FS image into ../data/ dir" 
 
 mkdir -p ../data/css ../data/js
 
