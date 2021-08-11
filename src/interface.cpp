@@ -5,6 +5,8 @@
 #include "interface.h"
 #include "config.h"
 
+#include "uistrings.h"
+
 /**
  * Define configuration variables and controls handlers
  * variables has literal names and are kept within json-configuration file on flash
@@ -22,10 +24,12 @@ void create_parameters(){
     //embui.section_handle_add("esp32camdemo", block_cam);
     embui.section_handle_add("esp32cam", block_cam);
     embui.section_handle_add("stream", block_stream);
+    embui.section_handle_add("camSettings", block_cam_settings);
 
     embui.section_handle_add("ledBtn", led_toggle);
     embui.section_handle_add("ledBright", set_led_bright);
     embui.section_handle_add("refresh", set_refresh);
+    embui.section_handle_add("setCam", set_cam);
 }
 
 /**
@@ -39,6 +43,7 @@ void block_menu(Interface *interf, JsonObject *data){
 
     interf->option("esp32cam", F("esp32cam"));
     interf->option("stream", F("stream"));
+    interf->option("camSettings", F("camSettings"));
 
     /**
      * добавляем в меню пункт - настройки,
@@ -82,7 +87,7 @@ void led_toggle(Interface *interf, JsonObject *data){
 
 void set_led_bright(Interface *interf, JsonObject *data){
     if (!interf || !data) return;
-    camera->setLedBright((*data)["ledBright"].as<int8_t>());
+    SETPARAM("ledBright", camera->setLedBright((*data)["ledBright"].as<int8_t>()));
 }
 
 // Check if photo capture was successful
@@ -201,6 +206,81 @@ void block_stream(Interface *interf, JsonObject *data){
     
     interf->json_section_end();
     interf->json_frame_flush();
+
+    camera->setLedBright(camera->getLedBright());
+}
+
+void block_cam_settings(Interface *interf, JsonObject *data) {
+    if (!interf) return;
+    camera->setLedOff();
+    
+    interf->json_frame_interface();
+    interf->json_section_main(String("camSettings"), String("ESP32CAM SETTINGS"));
+
+    interf->json_section_begin(String("setCam"));
+    interf->range(FPSTR(T_FRAMESIZE), camera->getParam(FRAMESIZE), String(0),String(10),String(1),"Размер фрейма", false);
+    interf->range(FPSTR(T_QUALITY), camera->getParam(QUALITY), String(0),String(63),String(1),"Качество", false);
+    interf->range(FPSTR(T_BRIGHTNESS), camera->getParam(BRIGHTNESS), String(-2),String(2),String(1),"Яркость", false);
+    interf->range(FPSTR(T_CONTRAST), camera->getParam(CONTRAST), String(-2),String(2),String(1),"Контраст", false);
+    interf->range(FPSTR(T_SATURATION), camera->getParam(SATURATION), String(-2),String(2),String(1),"Насыщенность", false);
+    interf->range(FPSTR(T_SHARPNESS), camera->getParam(SHARPNESS), String(-2),String(2),String(1),"Острота", false);
+    interf->range(FPSTR(T_DENOISE), camera->getParam(DENOISE), String(0),String(63),String(1),"Шумоподавление", false);
+    interf->range(FPSTR(T_SPECIAL_EFFECT), camera->getParam(SPECIAL_EFFECT), String(0),String(6),String(1),"Специальный эффект", false);
+    interf->range(FPSTR(T_WB_MODE), camera->getParam(WB_MODE), String(0),String(4),String(1),"WB Mode", false);
+    interf->range(FPSTR(T_AWB), camera->getParam(AWB), String(0),String(63),String(1),"AWB", false);
+    interf->range(FPSTR(T_AWB_GAIN), camera->getParam(AWB_GAIN), String(0),String(63),String(1),"AWB Gain", false);
+    interf->range(FPSTR(T_AEC), camera->getParam(AEC), String(0),String(63),String(1),"AEC", false);
+    interf->range(FPSTR(T_AEC2), camera->getParam(AEC2), String(0),String(63),String(1),"AEC2", false);
+    interf->range(FPSTR(T_AE_LEVEL), camera->getParam(AE_LEVEL), String(-2),String(2),String(1),"AE уровень", false);
+    interf->range(FPSTR(T_AEC_VALUE), camera->getParam(AEC_VALUE), String(0),String(1200),String(10),"AEC значение", false);
+    interf->range(FPSTR(T_AGC), camera->getParam(AGC), String(0),String(63),String(1),"AGC", false);
+    interf->range(FPSTR(T_AGC_GAIN), camera->getParam(AGC_GAIN), String(0),String(30),String(1),"AGC gain", false);
+    interf->range(FPSTR(T_GAINCEILING), camera->getParam(GAINCEILING), String(0),String(6),String(1),"Gainceiling", false);
+    interf->range(FPSTR(T_BPC), camera->getParam(BPC), String(0),String(63),String(1),"BPC", false);
+    interf->range(FPSTR(T_WPC), camera->getParam(WPC), String(0),String(63),String(1),"WPC", false);
+    interf->range(FPSTR(T_RAW_GMA), camera->getParam(RAW_GMA), String(0),String(63),String(1),"RAW GMA", false);
+    interf->range(FPSTR(T_LENC), camera->getParam(LENC), String(0),String(63),String(1),"LENC", false);
+    interf->range(FPSTR(T_HMIRROR), camera->getParam(HMIRROR), String(0),String(1),String(1),"Зеркально", false);
+    interf->range(FPSTR(T_VFLIP), camera->getParam(VFLIP), String(0),String(1),String(1),"Вертикальный разворот", false);
+    interf->range(FPSTR(T_DCW), camera->getParam(DCW), String(0),String(63),String(1),"DCW", false);
+    interf->range(FPSTR(T_COLORBAR), camera->getParam(COLORBAR), String(0),String(63),String(1),"Colorbar", false);
+    interf->button_submit(String("setCam"), "Сохранить");
+    interf->json_section_end();
+
+    interf->json_section_end();
+    interf->json_frame_flush();
+
+}
+
+
+void set_cam(Interface *interf, JsonObject *data) {
+
+    SETPARAM(FPSTR(T_FRAMESIZE), camera->setParam(FRAMESIZE, (*data)[FPSTR(T_FRAMESIZE)]));
+    SETPARAM(FPSTR(T_QUALITY), camera->setParam(QUALITY, (*data)[FPSTR(T_QUALITY)]));
+    SETPARAM(FPSTR(T_BRIGHTNESS), camera->setParam(BRIGHTNESS, (*data)[FPSTR(T_BRIGHTNESS)]));
+    SETPARAM(FPSTR(T_CONTRAST), camera->setParam(CONTRAST, (*data)[FPSTR(T_CONTRAST)]));
+    SETPARAM(FPSTR(T_SATURATION), camera->setParam(SATURATION, (*data)[FPSTR(T_SATURATION)]));
+    SETPARAM(FPSTR(T_SHARPNESS), camera->setParam(SHARPNESS, (*data)[FPSTR(T_SHARPNESS)]));
+    SETPARAM(FPSTR(T_DENOISE), camera->setParam(DENOISE, (*data)[FPSTR(T_DENOISE)]));
+    SETPARAM(FPSTR(T_SPECIAL_EFFECT), camera->setParam(SPECIAL_EFFECT, (*data)[FPSTR(T_SPECIAL_EFFECT)]));
+    SETPARAM(FPSTR(T_WB_MODE), camera->setParam(WB_MODE, (*data)[FPSTR(T_WB_MODE)]));
+    SETPARAM(FPSTR(T_AWB), camera->setParam(AWB, (*data)[FPSTR(T_AWB)]));
+    SETPARAM(FPSTR(T_AWB_GAIN), camera->setParam(AWB_GAIN, (*data)[FPSTR(T_AWB_GAIN)]));
+    SETPARAM(FPSTR(T_AEC), camera->setParam(AEC, (*data)[FPSTR(T_AEC)]));
+    SETPARAM(FPSTR(T_AEC2), camera->setParam(AEC2, (*data)[FPSTR(T_AEC2)]));
+    SETPARAM(FPSTR(T_AE_LEVEL), camera->setParam(AE_LEVEL, (*data)[FPSTR(T_AE_LEVEL)]));
+    SETPARAM(FPSTR(T_AEC_VALUE), camera->setParam(AEC_VALUE, (*data)[FPSTR(T_AEC_VALUE)]));
+    SETPARAM(FPSTR(T_AGC), camera->setParam(AGC, (*data)[FPSTR(T_AGC)]));
+    SETPARAM(FPSTR(T_AGC_GAIN), camera->setParam(AGC_GAIN, (*data)[FPSTR(T_AGC_GAIN)]));
+    SETPARAM(FPSTR(T_GAINCEILING), camera->setParam(GAINCEILING, (*data)[FPSTR(T_GAINCEILING)]));
+    SETPARAM(FPSTR(T_BPC), camera->setParam(BPC, (*data)[FPSTR(T_BPC)]));
+    SETPARAM(FPSTR(T_WPC), camera->setParam(WPC, (*data)[FPSTR(T_WPC)]));
+    SETPARAM(FPSTR(T_RAW_GMA), camera->setParam(RAW_GMA, (*data)[FPSTR(T_RAW_GMA)]));
+    SETPARAM(FPSTR(T_LENC), camera->setParam(LENC, (*data)[FPSTR(T_LENC)]));
+    SETPARAM(FPSTR(T_HMIRROR), camera->setParam(HMIRROR, (*data)[FPSTR(T_HMIRROR)]));
+    SETPARAM(FPSTR(T_VFLIP), camera->setParam(VFLIP, (*data)[FPSTR(T_VFLIP)]));
+    SETPARAM(FPSTR(T_DCW), camera->setParam(DCW, (*data)[FPSTR(T_DCW)]));
+    SETPARAM(FPSTR(T_COLORBAR), camera->setParam(COLORBAR, (*data)[FPSTR(T_COLORBAR)]));
 }
 
 void pubCallback(Interface *interf){

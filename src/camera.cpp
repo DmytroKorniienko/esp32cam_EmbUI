@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "uistrings.h"
 // https://gist.github.com/me-no-dev/d34fba51a8f059ac559bf62002e61aa3
 typedef struct {
         camera_fb_t * fb;
@@ -364,32 +364,32 @@ void EMBUICAMERA::setCameraVar(AsyncWebServerRequest *request){
     }
 
     int res = 0;
-    if(!strcmp(variable, "framesize")) res = s->set_framesize(s, (framesize_t)val);
-    else if(!strcmp(variable, "quality")) res = s->set_quality(s, val);
-    else if(!strcmp(variable, "contrast")) res = s->set_contrast(s, val);
-    else if(!strcmp(variable, "brightness")) res = s->set_brightness(s, val);
-    else if(!strcmp(variable, "saturation")) res = s->set_saturation(s, val);
-    else if(!strcmp(variable, "sharpness")) res = s->set_sharpness(s, val);
-    else if(!strcmp(variable, "gainceiling")) res = s->set_gainceiling(s, (gainceiling_t)val);
-    else if(!strcmp(variable, "colorbar")) res = s->set_colorbar(s, val);
-    else if(!strcmp(variable, "awb")) res = s->set_whitebal(s, val);
-    else if(!strcmp(variable, "agc")) res = s->set_gain_ctrl(s, val);
-    else if(!strcmp(variable, "aec")) res = s->set_exposure_ctrl(s, val);
-    else if(!strcmp(variable, "hmirror")) res = s->set_hmirror(s, val);
-    else if(!strcmp(variable, "vflip")) res = s->set_vflip(s, val);
-    else if(!strcmp(variable, "awb_gain")) res = s->set_awb_gain(s, val);
-    else if(!strcmp(variable, "agc_gain")) res = s->set_agc_gain(s, val);
-    else if(!strcmp(variable, "aec_value")) res = s->set_aec_value(s, val);
-    else if(!strcmp(variable, "aec2")) res = s->set_aec2(s, val);
-    else if(!strcmp(variable, "denoise")) res = s->set_denoise(s, val);
-    else if(!strcmp(variable, "dcw")) res = s->set_dcw(s, val);
-    else if(!strcmp(variable, "bpc")) res = s->set_bpc(s, val);
-    else if(!strcmp(variable, "wpc")) res = s->set_wpc(s, val);
-    else if(!strcmp(variable, "raw_gma")) res = s->set_raw_gma(s, val);
-    else if(!strcmp(variable, "lenc")) res = s->set_lenc(s, val);
-    else if(!strcmp(variable, "special_effect")) res = s->set_special_effect(s, val);
-    else if(!strcmp(variable, "wb_mode")) res = s->set_wb_mode(s, val);
-    else if(!strcmp(variable, "ae_level")) res = s->set_ae_level(s, val);
+    if(!strcmp(variable, PSTR(T_FRAMESIZE))) res = s->set_framesize(s, (framesize_t)val);
+    else if(!strcmp(variable, PSTR(T_QUALITY))) res = s->set_quality(s, val);
+    else if(!strcmp(variable, PSTR(T_CONTRAST))) res = s->set_contrast(s, val);
+    else if(!strcmp(variable, PSTR(T_BRIGHTNESS))) res = s->set_brightness(s, val);
+    else if(!strcmp(variable, PSTR(T_SATURATION))) res = s->set_saturation(s, val);
+    else if(!strcmp(variable, PSTR(T_SHARPNESS))) res = s->set_sharpness(s, val);
+    else if(!strcmp(variable, PSTR(T_GAINCEILING))) res = s->set_gainceiling(s, (gainceiling_t)val);
+    else if(!strcmp(variable, PSTR(T_COLORBAR))) res = s->set_colorbar(s, val);
+    else if(!strcmp(variable, PSTR(T_AWB))) res = s->set_whitebal(s, val);
+    else if(!strcmp(variable, PSTR(T_AGC))) res = s->set_gain_ctrl(s, val);
+    else if(!strcmp(variable, PSTR(T_AEC))) res = s->set_exposure_ctrl(s, val);
+    else if(!strcmp(variable, PSTR(T_HMIRROR))) res = s->set_hmirror(s, val);
+    else if(!strcmp(variable, PSTR(T_VFLIP))) res = s->set_vflip(s, val);
+    else if(!strcmp(variable, PSTR(T_AWB_GAIN))) res = s->set_awb_gain(s, val);
+    else if(!strcmp(variable, PSTR(T_AGC_GAIN))) res = s->set_agc_gain(s, val);
+    else if(!strcmp(variable, PSTR(T_AEC_VALUE))) res = s->set_aec_value(s, val);
+    else if(!strcmp(variable, PSTR(T_AEC2))) res = s->set_aec2(s, val);
+    else if(!strcmp(variable, PSTR(T_DENOISE))) res = s->set_denoise(s, val);
+    else if(!strcmp(variable, PSTR(T_DCW))) res = s->set_dcw(s, val);
+    else if(!strcmp(variable, PSTR(T_BPC))) res = s->set_bpc(s, val);
+    else if(!strcmp(variable, PSTR(T_WPC))) res = s->set_wpc(s, val);
+    else if(!strcmp(variable, PSTR(T_RAW_GMA))) res = s->set_raw_gma(s, val);
+    else if(!strcmp(variable, PSTR(T_LENC))) res = s->set_lenc(s, val);
+    else if(!strcmp(variable, PSTR(T_SPECIAL_EFFECT))) res = s->set_special_effect(s, val);
+    else if(!strcmp(variable, PSTR(T_WB_MODE))) res = s->set_wb_mode(s, val);
+    else if(!strcmp(variable, PSTR(T_AE_LEVEL))) res = s->set_ae_level(s, val);
     else {
         log_e("unknown setting %s", var.c_str());
         request->send(404);
