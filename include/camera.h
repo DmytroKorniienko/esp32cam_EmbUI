@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "EmbUI.h"
+#include "main.h"
 
 #include <esp_bt.h>
 #include <esp_wifi.h>
@@ -20,6 +21,37 @@
 // extern TaskHandle_t tCam;
 // extern uint8_t       noActiveClients;
 // extern BlinkerTask *btask;
+
+enum {
+  FRAMESIZE, //0 - 10
+  SCALE, //bool
+  BINNING, //bool
+  QUALITY,//0 - 63
+  BRIGHTNESS,//-2 - 2
+  CONTRAST,//-2 - 2
+  SATURATION,//-2 - 2
+  SHARPNESS,//-2 - 2
+  DENOISE,
+  SPECIAL_EFFECT,//0 - 6
+  WB_MODE,//0 - 4
+  AWB,
+  AWB_GAIN,
+  AEC,
+  AEC2,
+  AE_LEVEL,//-2 - 2
+  AEC_VALUE,//0 - 1200
+  AGC,
+  AGC_GAIN,//0 - 30
+  GAINCEILING,//0 - 6
+  BPC,
+  WPC,
+  RAW_GMA,
+  LENC,
+  HMIRROR,
+  VFLIP,
+  DCW,
+  COLORBAR
+};
 
 class CAMERA {
   // // ===== rtos task handles =========================
@@ -167,6 +199,278 @@ public:
   static void sendJpg(AsyncWebServerRequest *request);
   static void sendBMP(AsyncWebServerRequest *request);
   static void handleNotFound(AsyncWebServerRequest *request);
+
+  static void setParam(uint8_t param, String val){
+    sensor_t * s = esp_camera_sensor_get();
+    if(s == NULL){
+        return;
+    }
+
+    switch (param)
+    {
+    case FRAMESIZE:
+      s->set_framesize(s, (framesize_t)val.toInt());
+      break;
+
+    case QUALITY:
+      s->set_quality(s, val.toInt());
+      break;
+
+
+    case BRIGHTNESS:
+      s->set_brightness(s, val.toInt());
+      break;
+
+
+    case CONTRAST:
+      s->set_contrast(s, val.toInt());
+      break;
+
+
+    case SATURATION:
+      s->set_saturation(s, val.toInt());
+      break;
+
+
+    case SHARPNESS:
+      s->set_sharpness(s, val.toInt());
+      break;
+
+
+    case DENOISE:
+      s->set_denoise(s, val.toInt());
+      break;
+
+
+    case SPECIAL_EFFECT:
+      s->set_special_effect(s, val.toInt());
+      break;
+
+
+    case WB_MODE:
+      s->set_wb_mode(s, val.toInt());
+      break;
+
+
+    case AWB:
+      s->set_whitebal(s, val.toInt());
+      break;
+
+
+    case AWB_GAIN:
+      s->set_awb_gain(s, val.toInt());
+      break;
+
+
+    case AEC:
+      s->set_exposure_ctrl(s, val.toInt());
+      break;
+
+
+    case AEC2:
+      s->set_aec2(s, val.toInt());
+      break;
+
+
+    case AE_LEVEL:
+      s->set_ae_level(s, val.toInt());
+      break;
+
+
+    case AEC_VALUE:
+      s->set_aec_value(s, val.toInt());
+      break;
+
+
+    case AGC:
+      s->set_gain_ctrl(s, val.toInt());
+      break;
+
+
+    case AGC_GAIN:
+      s->set_agc_gain(s, val.toInt());
+      break;
+
+
+    case GAINCEILING:
+      s->set_gainceiling(s, (gainceiling_t)val.toInt());
+      break;
+
+
+    case BPC:
+      s->set_bpc(s, val.toInt());
+      break;
+
+
+    case WPC:
+      s->set_wpc(s, val.toInt());
+      break;
+
+    case RAW_GMA:
+      s->set_raw_gma(s, val.toInt());
+      break;
+
+    case LENC:
+      s->set_lenc(s, val.toInt());
+      break;
+
+    case HMIRROR:
+      s->set_hmirror(s, val.toInt());
+      break;
+
+    case VFLIP:
+      s->set_vflip(s, val.toInt());
+      break;
+
+    case DCW:
+      s->set_dcw(s, val.toInt());
+      break;
+
+    case COLORBAR:
+      s->set_colorbar(s, val.toInt());
+      break;
+    
+    default:
+      break;
+    }
+  }
+
+static String getParam(uint8_t param){
+    sensor_t * s = esp_camera_sensor_get();
+    String val = "";
+    if(s == NULL){
+        return val;
+    }
+
+    switch (param)
+    {
+    case FRAMESIZE:
+      val = String(s->status.framesize);
+      break;
+
+    case QUALITY:
+      val = String(s->status.quality);
+      break;
+
+
+    case BRIGHTNESS:
+      val = String(s->status.brightness);
+      break;
+
+
+    case CONTRAST:
+      val = String(s->status.contrast);
+      break;
+
+
+    case SATURATION:
+      val = String(s->status.saturation);
+      break;
+
+
+    case SHARPNESS:
+      val = String(s->status.sharpness);
+      break;
+
+
+    case DENOISE:
+      val = String(s->status.denoise);
+      break;
+
+
+    case SPECIAL_EFFECT:
+      val = String(s->status.special_effect);
+      break;
+
+
+    case WB_MODE:
+      val = String(s->status.wb_mode);
+      break;
+
+
+    case AWB:
+      val = String(s->status.awb);
+      break;
+
+
+    case AWB_GAIN:
+      val = String(s->status.awb_gain);
+      break;
+
+
+    case AEC:
+      val = String(s->status.aec);
+      break;
+
+
+    case AEC2:
+      val = String(s->status.aec2);
+      break;
+
+
+    case AE_LEVEL:
+      val = String(s->status.ae_level);
+      break;
+
+
+    case AEC_VALUE:
+      val = String(s->status.aec_value);
+      break;
+
+
+    case AGC:
+      val = String(s->status.agc);
+      break;
+
+
+    case AGC_GAIN:
+      val = String(s->status.agc_gain);
+      break;
+
+
+    case GAINCEILING:
+      val = String(s->status.gainceiling);
+      break;
+
+
+    case BPC:
+      val = String(s->status.bpc);
+      break;
+
+
+    case WPC:
+      val = String(s->status.wpc);
+      break;
+
+    case RAW_GMA:
+      val = String(s->status.raw_gma);
+      break;
+
+    case LENC:
+      val = String(s->status.lenc);
+      break;
+
+    case HMIRROR:
+      val = String(s->status.hmirror);
+      break;
+
+    case VFLIP:
+      val = String(s->status.vflip);
+      break;
+
+    case DCW:
+      val = String(s->status.dcw);
+      break;
+
+    case COLORBAR:
+      val = String(s->status.colorbar);
+      break;
+    
+    default:
+      break;
+    }
+  return val;
+  }
 };
 
 #endif
