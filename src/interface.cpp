@@ -204,10 +204,124 @@ void block_stream(Interface *interf, JsonObject *data){
     interf->range("ledBright",String(camera->getLedBright()),String(0),String(15),String(1),"Уровень светимости светодиода", true);
     interf->button("ledBtn","Переключение светодиода");
     
+    interf->json_section_hidden(String("setCam"), "Настройки камеры");
+    interf->button_submit(String("setCam"), "Сохранить");
+    cam_settings(interf, data);
+    interf->json_section_end();
+
     interf->json_section_end();
     interf->json_frame_flush();
 
     camera->setLedBright(camera->getLedBright());
+}
+
+void set_frame(Interface *interf, JsonObject *data) {
+    
+}
+
+void cam_settings(Interface *interf, JsonObject *data) {
+
+    interf->json_section_line();
+    interf->select(FPSTR(T_FRAMESIZE), camera->getParam(FRAMESIZE), String("Разрешение"), false);
+    interf->option(String(FRAMESIZE_96X96), "96x96");
+    interf->option(String(FRAMESIZE_QQVGA), "160x120");
+    interf->option(String(FRAMESIZE_QCIF), "176x144");
+    interf->option(String(FRAMESIZE_HQVGA), "240x176");
+    interf->option(String(FRAMESIZE_240X240), "240x240");
+    interf->option(String(FRAMESIZE_QVGA), "320x240");
+    interf->option(String(FRAMESIZE_CIF), "400x296");
+    interf->option(String(FRAMESIZE_HVGA), "480x320");
+    interf->option(String(FRAMESIZE_VGA), "640x480");
+    interf->option(String(FRAMESIZE_SVGA), "800x600");
+    interf->option(String(FRAMESIZE_XGA), "1024x768");
+    interf->option(String(FRAMESIZE_HD), "1280x720");
+    interf->option(String(FRAMESIZE_SXGA), "1280x1024");
+    interf->option(String(FRAMESIZE_UXGA), "1600x1200");
+#ifdef CAM_3MP
+    interf->option(String(FRAMESIZE_FHD), "1920x1080");
+    interf->option(String(FRAMESIZE_P_HD), "720x1280");
+    interf->option(String(FRAMESIZE_P_3MP), "864x1536");
+    interf->option(String(FRAMESIZE_QXGA), "2048x1536");
+#endif
+#ifdef CAM_5MP
+    interf->option(String(FRAMESIZE_QHD), "2560x1440");
+    interf->option(String(FRAMESIZE_WQXGA), "2560x1600");
+    interf->option(String(FRAMESIZE_P_FHD), "1080x1920");
+    interf->option(String(FRAMESIZE_QSXGA), "2560x1920");
+#endif
+    interf->json_section_end();
+
+    interf->select(FPSTR(T_SPECIAL_EFFECT), camera->getParam(SPECIAL_EFFECT), String("Спец. эффект"), false);
+    interf->option(String(0), "Без эффекта");
+    interf->option(String(1), "Негатив");
+    interf->option(String(2), "Оттенки серого");
+    interf->option(String(3), "Красный оттенок");
+    interf->option(String(4), "Зеленый оттенок");
+    interf->option(String(5), "Синий оттенок");
+    interf->option(String(6), "Сепия");
+    interf->json_section_end();
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->range(FPSTR(T_QUALITY), camera->getParam(QUALITY), String(0),String(63),String(1),"Качество", false);
+    interf->range(FPSTR(T_BRIGHTNESS), camera->getParam(BRIGHTNESS), String(-2),String(2),String(1),"Яркость", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->range(FPSTR(T_CONTRAST), camera->getParam(CONTRAST), String(-2),String(2),String(1),"Контраст", false);
+    interf->range(FPSTR(T_SATURATION), camera->getParam(SATURATION), String(-2),String(2),String(1),"Насыщенность", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->range(FPSTR(T_SHARPNESS), camera->getParam(SHARPNESS), String(-2),String(2),String(1),"Острота", false);
+    interf->range(FPSTR(T_DENOISE), camera->getParam(DENOISE), String(0),String(63),String(1),"Шумоподавление", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->checkbox(FPSTR(T_AWB), camera->getParam(AWB), "Баланс бел.", false);
+    interf->checkbox(FPSTR(T_AWB_GAIN), camera->getParam(AWB_GAIN), "Усиление ББ", false);
+    interf->json_section_end();
+    interf->select(FPSTR(T_WB_MODE), camera->getParam(WB_MODE), String("Режим ББ"), false);
+    interf->option(String(0), "Авто");
+    interf->option(String(1), "Солнечно");
+    interf->option(String(2), "Облачно");
+    interf->option(String(3), "Офис");
+    interf->option(String(4), "Дома");
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->checkbox(FPSTR(T_AEC), camera->getParam(AEC), "AEC", false);
+    interf->checkbox(FPSTR(T_AEC2), camera->getParam(AEC2), "AEC2", false);
+    interf->json_section_end();
+    
+    interf->json_section_line();
+    interf->range(FPSTR(T_AE_LEVEL), camera->getParam(AE_LEVEL), String(-2),String(2),String(1),"AE уровень", false);
+    interf->range(FPSTR(T_AEC_VALUE), camera->getParam(AEC_VALUE), String(0),String(1200),String(10),"AEC значение", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->checkbox(FPSTR(T_AGC), camera->getParam(AGC), "AGC", false);
+    interf->checkbox(FPSTR(T_BPC), camera->getParam(BPC), "BPC", false);
+    interf->checkbox(FPSTR(T_WPC), camera->getParam(WPC), "WPC", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->range(FPSTR(T_AGC_GAIN), camera->getParam(AGC_GAIN), String(0),String(30),String(1),"AGC gain", false);
+    interf->range(FPSTR(T_GAINCEILING), camera->getParam(GAINCEILING), String(0),String(6),String(1),"Gainceiling", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->checkbox(FPSTR(T_RAW_GMA), camera->getParam(RAW_GMA), "RAW GMA", false);
+    interf->checkbox(FPSTR(T_LENC), camera->getParam(LENC), "LENC", false);
+    interf->checkbox(FPSTR(T_HMIRROR), camera->getParam(HMIRROR), "Зеркально", false);
+    interf->json_section_end();
+
+    interf->json_section_line();
+    interf->checkbox(FPSTR(T_VFLIP), camera->getParam(VFLIP), "Верт. разворот", false);
+    interf->checkbox(FPSTR(T_DCW), camera->getParam(DCW), "DCW", false);
+    interf->checkbox(FPSTR(T_COLORBAR), camera->getParam(COLORBAR), "Colorbar", false);
+    interf->json_section_end();
+
 }
 
 void block_cam_settings(Interface *interf, JsonObject *data) {
@@ -217,36 +331,11 @@ void block_cam_settings(Interface *interf, JsonObject *data) {
     interf->json_frame_interface();
     interf->json_section_main(String("camSettings"), String("ESP32CAM SETTINGS"));
 
-    interf->json_section_begin(String("setCam"));
-    interf->range(FPSTR(T_FRAMESIZE), camera->getParam(FRAMESIZE), String(0),String(10),String(1),"Размер фрейма", false);
-    interf->range(FPSTR(T_QUALITY), camera->getParam(QUALITY), String(0),String(63),String(1),"Качество", false);
-    interf->range(FPSTR(T_BRIGHTNESS), camera->getParam(BRIGHTNESS), String(-2),String(2),String(1),"Яркость", false);
-    interf->range(FPSTR(T_CONTRAST), camera->getParam(CONTRAST), String(-2),String(2),String(1),"Контраст", false);
-    interf->range(FPSTR(T_SATURATION), camera->getParam(SATURATION), String(-2),String(2),String(1),"Насыщенность", false);
-    interf->range(FPSTR(T_SHARPNESS), camera->getParam(SHARPNESS), String(-2),String(2),String(1),"Острота", false);
-    interf->range(FPSTR(T_DENOISE), camera->getParam(DENOISE), String(0),String(63),String(1),"Шумоподавление", false);
-    interf->range(FPSTR(T_SPECIAL_EFFECT), camera->getParam(SPECIAL_EFFECT), String(0),String(6),String(1),"Специальный эффект", false);
-    interf->range(FPSTR(T_WB_MODE), camera->getParam(WB_MODE), String(0),String(4),String(1),"WB Mode", false);
-    interf->range(FPSTR(T_AWB), camera->getParam(AWB), String(0),String(63),String(1),"AWB", false);
-    interf->range(FPSTR(T_AWB_GAIN), camera->getParam(AWB_GAIN), String(0),String(63),String(1),"AWB Gain", false);
-    interf->range(FPSTR(T_AEC), camera->getParam(AEC), String(0),String(63),String(1),"AEC", false);
-    interf->range(FPSTR(T_AEC2), camera->getParam(AEC2), String(0),String(63),String(1),"AEC2", false);
-    interf->range(FPSTR(T_AE_LEVEL), camera->getParam(AE_LEVEL), String(-2),String(2),String(1),"AE уровень", false);
-    interf->range(FPSTR(T_AEC_VALUE), camera->getParam(AEC_VALUE), String(0),String(1200),String(10),"AEC значение", false);
-    interf->range(FPSTR(T_AGC), camera->getParam(AGC), String(0),String(63),String(1),"AGC", false);
-    interf->range(FPSTR(T_AGC_GAIN), camera->getParam(AGC_GAIN), String(0),String(30),String(1),"AGC gain", false);
-    interf->range(FPSTR(T_GAINCEILING), camera->getParam(GAINCEILING), String(0),String(6),String(1),"Gainceiling", false);
-    interf->range(FPSTR(T_BPC), camera->getParam(BPC), String(0),String(63),String(1),"BPC", false);
-    interf->range(FPSTR(T_WPC), camera->getParam(WPC), String(0),String(63),String(1),"WPC", false);
-    interf->range(FPSTR(T_RAW_GMA), camera->getParam(RAW_GMA), String(0),String(63),String(1),"RAW GMA", false);
-    interf->range(FPSTR(T_LENC), camera->getParam(LENC), String(0),String(63),String(1),"LENC", false);
-    interf->range(FPSTR(T_HMIRROR), camera->getParam(HMIRROR), String(0),String(1),String(1),"Зеркально", false);
-    interf->range(FPSTR(T_VFLIP), camera->getParam(VFLIP), String(0),String(1),String(1),"Вертикальный разворот", false);
-    interf->range(FPSTR(T_DCW), camera->getParam(DCW), String(0),String(63),String(1),"DCW", false);
-    interf->range(FPSTR(T_COLORBAR), camera->getParam(COLORBAR), String(0),String(63),String(1),"Colorbar", false);
+    interf->json_section_begin(String("setCam"), "Настройки камеры");
+    cam_settings(interf, data);
     interf->button_submit(String("setCam"), "Сохранить");
     interf->json_section_end();
-
+    
     interf->json_section_end();
     interf->json_frame_flush();
 

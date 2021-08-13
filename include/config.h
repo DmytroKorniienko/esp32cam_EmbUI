@@ -31,6 +31,14 @@
 //#define CAMERA_MODEL_M5STACK_WIDE
 #define CAMERA_MODEL_AI_THINKER
 
+// #define CAM_3MP
+// #define CAM_5MP
+
+
+#ifdef CAM_5MP
+  #define CAM_3MP
+#endif
+
 #define MAX_CLIENTS   10
 
 // Photo File Name to save in LittleFS
