@@ -3,6 +3,7 @@
 #include "soc/rtc_cntl_reg.h"
 
 EMBUICAMERA *camera;
+EmbUI *embui = nullptr;
 
 // ==== SETUP method ==================================================================
 void setup()
@@ -15,26 +16,27 @@ void setup()
   Serial.printf("\n\nsetup: free heap  : %d\n", ESP.getFreeHeap());
   Serial.printf("setup: free PSRAM  : %d\n", ESP.getFreePsram());
 
-  embui.begin(); // Инициализируем EmbUI фреймворк.
+  embui = EmbUI::GetInstance(); // create embui instance
+  embui->begin(); // Инициализируем EmbUI фреймворк.
 
   camera = new EMBUICAMERA();
 
   //  Registering webserver handling routines
-  embui.server.onNotFound(EMBUICAMERA::handleNotFound);
+  embui->server.onNotFound(EMBUICAMERA::handleNotFound);
 
-  embui.server.on("/bmp", HTTP_GET, EMBUICAMERA::sendBMP);
-  embui.server.on("/jpg", HTTP_GET, EMBUICAMERA::sendJpg);
-  embui.server.on("/capture", HTTP_GET, EMBUICAMERA::sendJpg);
+  embui->server.on("/bmp", HTTP_GET, EMBUICAMERA::sendBMP);
+  embui->server.on("/jpg", HTTP_GET, EMBUICAMERA::sendJpg);
+  embui->server.on("/capture", HTTP_GET, EMBUICAMERA::sendJpg);
 
-  embui.server.on("/mjpeg/1", HTTP_GET, EMBUICAMERA::streamJpg);
-  embui.server.on("/stream", HTTP_GET, EMBUICAMERA::streamJpg);
-  embui.server.on("/control", HTTP_GET, EMBUICAMERA::setCameraVar);
-  embui.server.on("/status", HTTP_GET, EMBUICAMERA::getCameraStatus);
+  embui->server.on("/mjpeg/1", HTTP_GET, EMBUICAMERA::streamJpg);
+  embui->server.on("/stream", HTTP_GET, EMBUICAMERA::streamJpg);
+  embui->server.on("/control", HTTP_GET, EMBUICAMERA::setCameraVar);
+  embui->server.on("/status", HTTP_GET, EMBUICAMERA::getCameraStatus);
 
   Serial.printf("setup complete: free heap  : %d\n", ESP.getFreeHeap());
 }
 
 void loop() {
-  embui.handle(); // цикл, необходимый фреймворку (временно)
+  embui->handle(); // цикл, необходимый фреймворку (временно)
   vTaskDelay(100);
 }

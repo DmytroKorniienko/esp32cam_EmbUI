@@ -1,1 +1,1 @@
-https://github.com/DmytroKorniienko/EmbUI/raw/dev/resources/data.zip "c8d0f1f9ea23a63ffb94f4a97a410dfbde5740da9af3bbda8ea13fe0fe8a971c"
+https://github.com/DmytroKorniienko/EmbUI/raw/dev/resources/data.zip "54a1319f0b8c2b1423f455ab80201f5b366b74a121ebccc9973b0a249d25d987"

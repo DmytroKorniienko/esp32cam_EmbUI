@@ -12,5 +12,6 @@ void create_parameters();
 void sync_parameters();
 
 extern EMBUICAMERA *camera;
+extern EmbUI *embui;
 
 #endif
