@@ -38,5 +38,6 @@ void setup()
 
 void loop() {
   embui->handle(); // цикл, необходимый фреймворку (временно)
+  //LOG(printf_P,"IsDirty()=%d\n", embui->timeProcessor.isDirtyTime());
   vTaskDelay(100);
 }
