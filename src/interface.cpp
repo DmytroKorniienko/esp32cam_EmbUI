@@ -70,7 +70,7 @@ void section_main_frame(Interface *interf, JsonObject *data){
     //block_cam(interf, data);
     interf->json_frame_flush();
 
-    if(!embui->sysData.wifi_sta && embui->param(FPSTR(P_APonly))=="0"){
+    if(!embui->sysData.wifi_sta && embui->param(FPSTR(P_WIFIMODE))!="1"){
         // форсируем выбор вкладки настройки WiFi если контроллер не подключен к внешней AP и не задан режим принудительного AP
         BasicUI::block_settings_netw(interf, data);
     } else {
@@ -378,10 +378,10 @@ void pubCallback(Interface *interf){
     if (!interf) return;
     interf->json_frame_value();
     interf->value(F("pTime"), embui->timeProcessor.getFormattedShortTime(), true);
-    interf->value(F("pMem"), String(ESP.getFreeHeap())+" / "+String(ESP.getFreePsram()), true);
-    //interf->value(F("pUptime"), String(millis()/1000), true);
+    interf->value(F("pMem"), String(ESP.getFreeHeap())+F(" / ")+String(ESP.getFreePsram()), true);
+    //interf->value(F("pUptime"), String(embui->getUptime()), true);
     char fuptime[16];
-    uint32_t tm = millis()/1000;
+    uint32_t tm = embui->getUptime();
     sprintf_P(fuptime, PSTR("%u.%02u:%02u:%02u"),tm/86400,(tm/3600)%24,(tm/60)%60,tm%60);
     interf->value("pUptime", String(fuptime), true);
     //interf->value("fsfreespace", String(myLamp.getLampState().fsfreespace), true);
