@@ -143,31 +143,34 @@ void set_refresh(Interface *interf, JsonObject *data)
     if(_offtask) return;
     
     camera->setLedBright(7);
-    delay(200);
-    capturePhotoSaveLittleFS();
-    camera->setLedOffAfterMS(200);
-    if(!_offtask){
-        _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
-            LOG(println, "Update WebUI");
-            Interface *interf =  EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, 512) : nullptr;
-            if(interf){
-                interf->json_frame_custom("xload");
-                interf->json_section_content();
-                //interf->json_frame_interface();
-                //interf->json_section_begin("photo");
-                //interf->frame2("jpgf", "jpg");
-                //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
-                interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
-                interf->json_section_end();
-                interf->json_frame_flush();
-                delete interf;
-            }
-            _offtask = nullptr;
-            TASK_RECYCLE;
-        },&ts,true);
-        _offtask->enableDelayed();
-    } else
-        _offtask->restartDelayed();
+    Task *_t = new Task(TASK_SECOND,TASK_ONCE, []{
+        capturePhotoSaveLittleFS();
+        camera->setLedOffAfterMS(200);
+        if(!_offtask){
+            _offtask = new Task(TASK_SECOND,TASK_ONCE, []{
+                LOG(println, "Update WebUI");
+                Interface *interf =  EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, 512) : nullptr;
+                if(interf){
+                    interf->json_frame_custom("xload");
+                    interf->json_section_content();
+                    //interf->json_frame_interface();
+                    //interf->json_section_begin("photo");
+                    //interf->frame2("jpgf", "jpg");
+                    //interf->frame2("jpgf", String(FILE_PHOTO) + "?" + micros());
+                    interf->image("jpgf", String(FILE_PHOTO) + "?" + micros());
+                    interf->json_section_end();
+                    interf->json_frame_flush();
+                    delete interf;
+                }
+                _offtask = nullptr;
+                TASK_RECYCLE;
+            },&ts,true);
+            _offtask->enableDelayed();
+        } else
+            _offtask->restartDelayed();
+        TASK_RECYCLE;
+    },&ts,true);
+    _t->enableDelayed();
 }
 
 void block_cam(Interface *interf, JsonObject *data){

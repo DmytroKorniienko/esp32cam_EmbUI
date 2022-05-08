@@ -143,7 +143,9 @@ public:
       //.frame_size     = FRAMESIZE_VGA,
       .frame_size     = FRAMESIZE_UXGA,
       .jpeg_quality   = 16,
-      .fb_count       = 16 // 2
+      .fb_count       = 8, // 2
+      .fb_location    = CAMERA_FB_IN_PSRAM, /*!< The location where the frame buffer will be allocated */
+      .grab_mode      = CAMERA_GRAB_LATEST  /*!< When buffers should be filled */
     };
 
 #if defined(CAMERA_MODEL_ESP_EYE)
@@ -151,6 +153,11 @@ public:
   pinMode(14, INPUT_PULLUP);
 #endif
 
+  // // https://github.com/espressif/esp32-camera/issues/370#issuecomment-1070791435
+  // digitalWrite(PWDN_GPIO_NUM, LOW);
+  // delay(10);
+  // digitalWrite(PWDN_GPIO_NUM, HIGH);
+  // delay(10);
   if (esp_camera_init(&camera_config) != ESP_OK) {
     Serial.println("Error initializing the camera");
     delay(10000);

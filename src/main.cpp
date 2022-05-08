@@ -11,7 +11,7 @@ void setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   // Setup Serial connection:
-  Serial.begin(460800);
+  Serial.begin(460800); // 115200
   //delay(1000); // wait for a second to let Serial connect
   Serial.printf("\n\nsetup: free heap  : %d\n", ESP.getFreeHeap());
   Serial.printf("setup: free PSRAM  : %d\n", ESP.getFreePsram());
