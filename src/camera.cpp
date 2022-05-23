@@ -133,6 +133,7 @@ class AsyncJpegStreamResponse: public AsyncAbstractResponse {
             return ret;
         }
         size_t _content(uint8_t *buffer, size_t maxLen, size_t index){
+            camera->setLedOffAfterMS(5000); // 5 sec delayed off
             if(!_frame.fb || _frame.index == _jpg_buf_len){
                 if(index && _frame.fb){
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
@@ -293,6 +294,14 @@ void EMBUICAMERA::sendJpg(AsyncWebServerRequest *request){
     request->send(response);
 }
 
+void EMBUICAMERA::sendJpg2(AsyncWebServerRequest *request){
+    camera->setLedBright(camera->getLedBright());
+    vTaskDelay(1500 / portTICK_PERIOD_MS); // The LED needs to be turned on ~150ms before the call to esp_camera_fb_get()
+    sendJpg(request);
+    //camera->setLedOffAfterMS(200);
+    camera->setLedOff();
+}
+
 void EMBUICAMERA::streamJpg(AsyncWebServerRequest *request){
     AsyncJpegStreamResponse *response = new AsyncJpegStreamResponse();
     if(!response){
@@ -301,6 +310,14 @@ void EMBUICAMERA::streamJpg(AsyncWebServerRequest *request){
     }
     response->addHeader("Access-Control-Allow-Origin", "*");
     request->send(response);
+}
+
+void EMBUICAMERA::streamJpg2(AsyncWebServerRequest *request){
+    //if(!camera->getLedBright())
+    //camera->setLedOffAfterMS(5000);
+    LOG(println,"Starting stream...");
+    camera->setLedBright(camera->getLedBright());
+    streamJpg(request);
 }
 
 void EMBUICAMERA::getCameraStatus(AsyncWebServerRequest *request){

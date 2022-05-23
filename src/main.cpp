@@ -25,11 +25,13 @@ void setup()
   embui->server.onNotFound(EMBUICAMERA::handleNotFound);
 
   embui->server.on("/bmp", HTTP_GET, EMBUICAMERA::sendBMP);
-  embui->server.on("/jpg", HTTP_GET, EMBUICAMERA::sendJpg);
-  embui->server.on("/capture", HTTP_GET, EMBUICAMERA::sendJpg);
 
-  embui->server.on("/mjpeg/1", HTTP_GET, EMBUICAMERA::streamJpg);
+  embui->server.on("/jpg", HTTP_GET, EMBUICAMERA::sendJpg);
   embui->server.on("/stream", HTTP_GET, EMBUICAMERA::streamJpg);
+
+  embui->server.on("/capture", HTTP_GET, EMBUICAMERA::sendJpg2);
+  embui->server.on("/mjpeg/1", HTTP_GET, EMBUICAMERA::streamJpg2);
+
   embui->server.on("/control", HTTP_GET, EMBUICAMERA::setCameraVar);
   embui->server.on("/status", HTTP_GET, EMBUICAMERA::getCameraStatus);
 

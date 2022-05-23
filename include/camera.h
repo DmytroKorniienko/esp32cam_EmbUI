@@ -201,9 +201,14 @@ public:
   void setLedOffAfterMS(uint16_t ms) {btask->setLedOffAfterMS(ms);}
 
   static void getCameraStatus(AsyncWebServerRequest *request);
-  static void streamJpg(AsyncWebServerRequest *request);
   static void setCameraVar(AsyncWebServerRequest *request);
+
   static void sendJpg(AsyncWebServerRequest *request);
+  static void streamJpg(AsyncWebServerRequest *request);
+
+  static void sendJpg2(AsyncWebServerRequest *request);
+  static void streamJpg2(AsyncWebServerRequest *request);
+
   static void sendBMP(AsyncWebServerRequest *request);
   static void handleNotFound(AsyncWebServerRequest *request);
 
