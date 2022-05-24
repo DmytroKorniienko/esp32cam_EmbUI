@@ -77,7 +77,7 @@ if [ $refresh_styles -eq 1 ] ; then
 
     curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/data.zip > embui.zip
     # т.к. неизвестно что изменилось во фреймворке, скрипты или цсски, обновляем всё
-    unzip -o -d ../data/ embui.zip "css/*" "js/*" "locale/*"
+    unzip -o -d ../data/ embui.zip "css/*" "js/*" "locale/*" "manifest.webmanifest"
 
     # append our styles to the embui
     for f in html/css/style_*.css
